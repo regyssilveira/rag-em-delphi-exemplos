@@ -38,7 +38,7 @@ function SplitDocument(const Document: TDocument;
 var
   ChunkList: TList<TChunk>;
   Chunk: TChunk;
-  StartPosition, LastPosition, Boundary, TextLength: Integer;
+  StartPosition, LastPosition, Boundary, TextLength, PreviousStart: Integer;
 begin
   if (MaxChars < 32) or (Overlap < 0) or (Overlap >= MaxChars) then
     raise EArgumentException.Create('Tamanho ou sobreposição inválidos');
@@ -74,11 +74,17 @@ begin
       ChunkList.Add(Chunk);
       if LastPosition = TextLength then
         Break;
-      StartPosition := LastPosition - Overlap + 1;
+      PreviousStart := StartPosition;
+      StartPosition := Max(PreviousStart + 1, LastPosition - Overlap + 1);
       if (StartPosition > 1) and
         (Ord(Document.Text[StartPosition]) >= $DC00) and
         (Ord(Document.Text[StartPosition]) <= $DFFF) then
-        Dec(StartPosition);
+      begin
+        if StartPosition - 1 > PreviousStart then
+          Dec(StartPosition)
+        else
+          Inc(StartPosition);
+      end;
     end;
     Result := ChunkList.ToArray;
   finally
