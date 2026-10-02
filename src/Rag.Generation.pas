@@ -39,13 +39,15 @@ Cada evidence é lista de objetos com label (rótulo presente no contexto) e quo
 Antes de responder, identifique qual informação a pergunta solicita. Confira se essa mesma informação aparece nas fontes. Um prazo de uma atividade não responde a uma pergunta sobre outra atividade, uma porcentagem ou um valor. Termos próximos ou a presença de qualquer fonte não bastam.
 Se a informação solicitada não aparece explicitamente, use insufficient e claims vazio. Não transforme um dado disponível em resposta para uma regra diferente. Não complete lacunas.
 Cada afirmação deve ser sustentada pelas citações que a acompanham. Não invente prazos, fontes ou citações. Copie a citação exatamente, inclusive maiúsculas, minúsculas e acentos, sem revisar sua grafia.
+Responda somente ao que foi perguntado, de forma breve. Separe regras diferentes em afirmações diferentes. Cada afirmação deve ter sua própria passagem de suporte.
+Prefira a menor frase completa da fonte que contém a informação necessária. Não copie parágrafos longos ou passagens sobre outros assuntos. Não una pedaços de trechos diferentes em uma mesma citação.
 Formato: {"status":"answered","claims":[{"text":"resposta","evidence":[{"label":"F1","quote":"passagem literal"}]}]}.
 Não acrescente campos, explicações fora do JSON ou instruções operacionais de execução. Você apenas consulta procedimentos.
 ''';
 
 
 function TOllamaAnswerProvider.GetModelIdentity: string;
-begin Result := Model + '@' + Digest + '|answer-prompt-v2'; end;
+begin Result := Model + '@' + Digest + '|answer-prompt-v3'; end;
 
 function TOllamaAnswerProvider.GetLastResponse: string;
 begin Result := FLastResponse; end;
