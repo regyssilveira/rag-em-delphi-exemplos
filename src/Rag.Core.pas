@@ -14,13 +14,21 @@ function SearchLexical(const Chunks: TArray<TChunk>;
 
 implementation
 
+uses Rag.Ingestion;
+
 function LoadDocument(const FileName, Access: string): TDocument;
 begin
   if not TFile.Exists(FileName) then
     raise EFileNotFoundException.Create('Documento não encontrado: ' + FileName);
   Result.Id := TPath.GetFileName(FileName);
   Result.Source := TPath.GetFullPath(FileName);
-  Result.Text := TFile.ReadAllText(FileName, TEncoding.UTF8);
+  if SameText(TPath.GetExtension(FileName), '.docx') then
+    Result.Text := ReadDocxText(FileName)
+  else if SameText(TPath.GetExtension(FileName), '.txt') or
+    SameText(TPath.GetExtension(FileName), '.md') then
+    Result.Text := ReadUtf8Text(FileName)
+  else
+    raise EReadError.Create('Formato ainda não suportado: ' + TPath.GetExtension(FileName));
   Result.Access := Access;
 end;
 

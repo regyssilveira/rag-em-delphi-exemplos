@@ -1,0 +1,4 @@
+Recebimento com divergência
+Somente o supervisor pode liberar.
+Produto	Quantidade
+Café	18

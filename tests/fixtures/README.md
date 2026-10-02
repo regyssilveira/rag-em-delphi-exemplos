@@ -1,0 +1,1 @@
+Fixtures próprios para o teste Delphi de ingestão. `simple.docx` é um pacote mínimo com parágrafos e tabela sem células mescladas. Os demais DOCX são deliberadamente inválidos ou fora do suporte. Não são documentos de uso empresarial. Os fixtures são distribuídos prontos; o leitor não precisa de Python para executar o teste.
