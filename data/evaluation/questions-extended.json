@@ -1,0 +1,123 @@
+[
+  {
+    "id": "E01",
+    "question": "A entrega veio com menos peças que a compra. Posso encerrar a entrada?",
+    "profile": "operacional",
+    "expected_source": "recebimento.md",
+    "expected_evidence": "fica pendente",
+    "case_kind": "pendência por paráfrase",
+    "expected_claim_any": [
+      "pendente"
+    ]
+  },
+  {
+    "id": "E02",
+    "question": "Quem dá o aval para aceitar uma entrega com diferença?",
+    "profile": "operacional",
+    "expected_source": "recebimento.md",
+    "expected_evidence": "Somente o supervisor",
+    "case_kind": "responsável por paráfrase",
+    "expected_claim_any": [
+      "supervisor"
+    ]
+  },
+  {
+    "id": "E03",
+    "question": "Posso corrigir a compra para ela bater com o que chegou?",
+    "profile": "operacional",
+    "expected_source": "recebimento.md",
+    "expected_evidence": "não altera o pedido",
+    "case_kind": "negação operacional",
+    "expected_claim_any": [
+      "não"
+    ]
+  },
+  {
+    "id": "E04",
+    "question": "O material que o cliente trouxe de volta pode ser vendido imediatamente?",
+    "profile": "operacional",
+    "expected_source": "devolucoes.md",
+    "expected_evidence": "não retornam automaticamente",
+    "case_kind": "devolução por paráfrase",
+    "expected_claim_any": [
+      "não"
+    ]
+  },
+  {
+    "id": "E05",
+    "question": "Quanto tempo temos para examinar um produto que voltou da venda?",
+    "profile": "operacional",
+    "expected_source": "devolucoes.md",
+    "expected_evidence": "dois dias úteis",
+    "case_kind": "prazo por paráfrase",
+    "expected_claim_any": [
+      "dois dias úteis",
+      "2 dias úteis"
+    ]
+  },
+  {
+    "id": "E06",
+    "question": "O que precisa ser anotado quando o cliente devolve um item?",
+    "profile": "operacional",
+    "expected_source": "devolucoes.md",
+    "expected_evidence": "motivo e condição",
+    "case_kind": "dados de registro",
+    "expected_claim_any": [
+      "motivo"
+    ]
+  },
+  {
+    "id": "E07",
+    "question": "Depois de contar as peças, quem decide corrigir o saldo?",
+    "profile": "supervisor",
+    "expected_source": "estoque.md",
+    "expected_evidence": "aprova ou rejeita",
+    "case_kind": "aprovação por paráfrase",
+    "expected_claim_any": [
+      "supervisor"
+    ]
+  },
+  {
+    "id": "E08",
+    "question": "Quais dados ficam registrados quando aprovamos a correção da quantidade?",
+    "profile": "supervisor",
+    "expected_source": "estoque.md",
+    "expected_evidence": "usuário, data e justificativa",
+    "case_kind": "rastreabilidade",
+    "expected_claim_any": [
+      "justificativa"
+    ]
+  },
+  {
+    "id": "E09",
+    "question": "Depois de contar as peças, quem decide corrigir o saldo?",
+    "profile": "operacional",
+    "expected_source": null,
+    "expected_evidence": null,
+    "case_kind": "mesma pergunta com acesso restrito"
+  },
+  {
+    "id": "E10",
+    "question": "Qual porcentagem da venda vai para o funcionário?",
+    "profile": "operacional",
+    "expected_source": null,
+    "expected_evidence": null,
+    "case_kind": "comissão ausente por paráfrase"
+  },
+  {
+    "id": "E11",
+    "question": "Em quantos dias a transportadora precisa entregar uma compra?",
+    "profile": "operacional",
+    "expected_source": null,
+    "expected_evidence": null,
+    "case_kind": "prazo de outro processo ausente"
+  },
+  {
+    "id": "E12",
+    "question": "Qual temperatura deve ser usada para armazenar matéria-prima?",
+    "profile": "supervisor",
+    "expected_source": null,
+    "expected_evidence": null,
+    "case_kind": "regra industrial ausente"
+  }
+]

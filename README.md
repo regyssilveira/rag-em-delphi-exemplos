@@ -206,3 +206,28 @@ O catálogo é administrativo e lista todas as origens, inclusive as reservadas 
 O worker permanece com `FreeOnTerminate = False`; a conclusão agenda sua liberação na thread principal por `ForceQueue`. Cancelamento é cooperativo. Uma gravação já confirmada é apresentada como concluída mesmo se chegar um pedido tardio de cancelamento.
 
 Provas por handlers em janela oculta não aprovam layout ou interação física com os diálogos. OCR ainda está em produção. Consulte as limitações de formato, tamanho e identidade antes de importar seus próprios documentos.
+
+## Avaliação ampliada, segurança e medição local
+
+Os programas abaixo compilam no Delphi 13 Win32, com `src` no caminho de pesquisa. Execute da raiz deste repositório. Os programas de avaliação e geração precisam dos modelos locais identificados anteriormente; os testes do arquivo e o microbenchmark não chamam modelos.
+
+```powershell
+dcc32 -B -Usrc -N0bin -Ebin tests/RetrievalEvaluation.dpr
+bin/RetrievalEvaluation.exe bin/integrated-base.json data/evaluation/questions-extended.json bin/retrieval-extended.json
+dcc32 -B -Usrc -N0bin -Ebin tests/ExtendedAnswers.dpr
+bin/ExtendedAnswers.exe data/corpus data/evaluation/questions-extended.json
+dcc32 -B -Usrc -N0bin -Ebin tests/SecurityBoundaryTests.dpr
+bin/SecurityBoundaryTests.exe .
+dcc32 -B -Usrc -N0bin -Ebin tests/GenerationSecurityProbe.dpr
+bin/GenerationSecurityProbe.exe bin/security-generation
+dcc32 -B -Usrc -N0bin -Ebin tests/LocalBenchmark.dpr
+bin/LocalBenchmark.exe bin/integrated-base.json bin/local-benchmark.json
+```
+
+A avaliação de recuperação guarda rankings lexical, vetorial e híbrido em cortes de 1, 3 e 6. As doze perguntas ampliadas contêm oito casos respondíveis e quatro sem evidência permitida. Na rodada observada, todos os métodos recuperaram as oito evidências no corte 6; todos também retornaram trechos nas quatro negativas. Retornar trechos não prova que exista resposta.
+
+Na configuração publicada de geração v11, `ExtendedAnswers` terminou com seis aprovações e seis reprovações automáticas. Há citações atribuídas a rótulos incorretos, abstenção indevida e um critério de evidência que exige revisão. Mesmo uma aprovação automática pode conservar uma afirmação mais ampla que a passagem. Leia as respostas brutas e seus contextos; não altere critérios para ocultar falhas. Os arquivos de diagnóstico usam somente documentos fictícios e são substituídos na repetição: copie-os para outra pasta se precisar preservar uma rodada.
+
+`SecurityBoundaryTests` passou cinco verificações, demonstrando também que o arquivo não é criptografado nem autenticado. Quem já pode alterar a base consegue reclassificar coerentemente seus documentos. O teste não altera permissões do Windows. `GenerationSecurityProbe` terminou com dois casos aprovados e dois reprovados: diante de ordens conflitantes, o modelo se absteve apesar de ter a regra válida. Esses programas não demonstram segurança geral.
+
+`LocalBenchmark` replica os mesmos trechos e vetores em três tamanhos e mede construção e vinte buscas por método. Usa um vetor de documento como consulta, sem calcular embedding de pergunta, chamar geração ou medir qualidade. As médias registradas não são latência completa nem requisito mínimo de hardware. A base original permanece intacta. OCR e revisão visual da interface continuam pendentes.
