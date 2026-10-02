@@ -82,3 +82,23 @@ bin/EmbeddingDemo.exe data/corpus
 ```
 
 O runtime deve estar ativo; execute `ollama serve` em outro terminal somente se não houver serviço ativo. A pasta `bin` precisa existir. A demonstração retorna candidatos até para uma pergunta sem resposta na base: similaridade não garante suficiência da evidência. Os exemplos não exigem Python nem SDK de fornecedor.
+
+## Persistência e busca híbrida do capítulo 10
+
+`Rag.Persistence` salva documentos, trechos, vetores e contrato em arquivos JSON locais. `Rag.Hybrid` combina posições das buscas lexical e vetorial, com filtros de acesso e detecção de versões conflitantes. Não exige biblioteca adicional.
+
+```powershell
+dcc32 -B -Usrc -N0bin -Ebin tests/PersistenceTests.dpr
+bin/PersistenceTests.exe
+dcc32 -B -Usrc -N0bin -Ebin tests/HybridTests.dpr
+bin/HybridTests.exe
+dcc32 -B -Usrc -N0bin -Ebin tests/CacheDemo.dpr
+bin/CacheDemo.exe --prepare data/corpus data/updates
+bin/CacheDemo.exe --offline
+```
+
+São 19 verificações de persistência com provedor sintético e 12 de fusão. `--prepare` usa o modelo real fixado no capítulo 9 e exige o runtime ativo. A prova cria oito vetores, reutiliza os oito após reabrir, atualiza devoluções de dois para três dias úteis e remove o documento de estoque da base final. Os arquivos gerados ficam em `bin`, fora do Git. O corpus original não é alterado.
+
+`--offline` reabre a base final e usa o vetor da pergunta de prazo previamente salvo; não faz chamadas ao runtime. Pode ser executado depois de encerrar o servidor que você iniciou para a prova. Perguntas novas ainda exigem preparar seus vetores. O exemplo não gera respostas. O arquivo de consulta é um artefato de demonstração, não um cache geral de produção.
+
+A base é limitada a 16 MiB e não é criptografada nem autenticada. Gravação por temporário não coordena escritores e não constitui prova contra toda queda de energia. Identificadores de documentos devem ser únicos. Confira contratos e limites no livro antes de adaptar a importação ao ERP.
