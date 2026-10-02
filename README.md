@@ -53,3 +53,16 @@ $pdfiumDll = (Resolve-Path .\bin\pdfium\bin\pdfium.dll).Path
 ```
 
 As 21 verificações incluem páginas, acentos, negação, origem nos trechos, imagem sem camada textual, página branca, caminho Unicode e erros de DLL e PDF. O programa foi compilado e executado no Delphi 13 Win32. O leitor rejeita senha, limites excedidos e caracteres sem mapeamento Unicode ao converter páginas em documentos. Sem texto extraído não significa necessariamente página escaneada. Extração não reconstrói tabelas/colunas nem garante ordem visual. OCR será uma etapa específica.
+
+## Busca lexical do capítulo 8
+
+`Rag.Lexical.pas` implementa índice invertido e BM25 com recursos nativos Delphi. A pontuação considera somente a coleção permitida ao perfil. Não implementa autenticação nem certifica relevância de uma resposta. Compilar no ambiente Delphi 13 Win32 configurado, com `bin` existente:
+
+```powershell
+dcc32 -B -Usrc -N0bin -Ebin tests/LexicalTests.dpr
+bin/LexicalTests.exe
+dcc32 -B -Usrc -N0bin -Ebin tests/LexicalDemo.dpr
+bin/LexicalDemo.exe data/corpus
+```
+
+São 15 verificações e quatro consultas no corpus próprio. A consulta operacional por ajuste e estoque pode recuperar devoluções sem fornecer a regra solicitada; encontrar candidatos não basta para responder. Parâmetros e limites estão descritos no capítulo. A função lexical inicial continua disponível em `Rag.Core` para comparação.
