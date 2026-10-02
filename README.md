@@ -102,3 +102,18 @@ São 19 verificações de persistência com provedor sintético e 12 de fusão. 
 `--offline` reabre a base final e usa o vetor da pergunta de prazo previamente salvo; não faz chamadas ao runtime. Pode ser executado depois de encerrar o servidor que você iniciou para a prova. Perguntas novas ainda exigem preparar seus vetores. O exemplo não gera respostas. O arquivo de consulta é um artefato de demonstração, não um cache geral de produção.
 
 A base é limitada a 16 MiB e não é criptografada nem autenticada. Gravação por temporário não coordena escritores e não constitui prova contra toda queda de energia. Identificadores de documentos devem ser únicos. Confira contratos e limites no livro antes de adaptar a importação ao ERP.
+
+## Preparação do contexto
+
+`Rag.Context` seleciona trechos inteiros, aplica acesso antes da serialização e associa rótulos `F1`, `F2` etc. às fontes completas. O limite mede unidades UTF-16 do JSON serializado, incluindo metadados, e não tokens do modelo.
+
+```powershell
+dcc32 -B -Usrc -N0bin -Ebin tests/ContextTests.dpr
+bin/ContextTests.exe
+dcc32 -B -Usrc -N0bin -Ebin tests/ContextDemo.dpr
+bin/ContextDemo.exe
+```
+
+Os 11 testes de seleção independem de runtime e base. `ContextDemo` exige a base final produzida por `CacheDemo --prepare data/corpus data/updates`, descrito acima; usa recuperação lexical local, sem chamadas ao modelo. Na prova, selecionou dois trechos de devoluções e conservou o prazo atualizado de três dias úteis. Caminhos de origem e comprimento serializado variam conforme o checkout.
+
+JSON preserva separação e texto, mas não impede que um modelo siga instruções maliciosas do documento. Fontes selecionadas também podem ser insuficientes para responder. A integração de geração, validação de citações e avaliação de respostas ainda está em produção.
