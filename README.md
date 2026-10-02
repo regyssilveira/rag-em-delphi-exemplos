@@ -158,3 +158,14 @@ bin/JsonMessageTests.exe
 O teste de apresentação com modelo exige a configuração de geração já descrita. Os demais testes não exigem runtime. Quatro verificações de JSON demonstram a preservação de acentos e aspas na mensagem interna e no envelope HTTP. O conteúdo textual enviado ao modelo usa `EncodeBelow32`, evitando apresentar acentos como escapes Unicode.
 
 Estado atual da geração: a versão 5 respondeu aos dois casos controlados e passou na apresentação em português, mas a repetição das oito perguntas teve seis aprovações e duas rejeições (Q02 e Q03). A configuração permanece exploratória. Não use o resultado anterior de oito aprovações como prova desta versão. Q02 demonstrou que citações existentes podem não sustentar a afirmação; Q03 absteve-se com regra disponível. Essa avaliação deve ser corrigida antes do percurso final do livro.
+
+## Coordenação para a interface
+
+`Rag.Assistant.QueryPreparedBase` reúne recuperação, fusão, contexto e geração sem acessar controles de uma janela. Exige uma base consistente, perfil conhecido e contrato de embeddings compatível. Sem trechos permitidos, devolve ausência de resposta sem chamar os modelos. A base não deve ser alterada concorrentemente à consulta.
+
+```powershell
+dcc32 -B -Usrc -N0bin -Ebin tests/AssistantTests.dpr
+bin/AssistantTests.exe
+```
+
+Cinco verificações com provedores sintéticos identificados: chamadas/origem, coleção sem acesso, perfil desconhecido, pergunta vazia e modelo incompatível. São provas de coordenação; não avaliam significado ou geração real. A janela VCL ainda precisa de implementação e verificação próprias.
