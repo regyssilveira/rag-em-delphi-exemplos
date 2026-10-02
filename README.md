@@ -122,12 +122,12 @@ JSON preserva separação e texto, mas não impede que um modelo siga instruçõ
 
 `Rag.Answers` exige afirmações com citações literais e resolve os rótulos usando o contexto local. Doze testes do contrato foram executados no Delphi 13. Uma citação existente não comprova que a afirmação decorre dela: a avaliação semântica continua necessária.
 
-`Rag.Generation` implementa `IAnswerProvider` com HTTP/JSON nativos e o candidato `qwen3:1.7b`. Configuração, digest e licença estão em `generation.lock.json`. Requer download adicional de aproximadamente 1,36 GB de artefatos e recursos de execução; não é garantia de requisitos mínimos de memória. Pesos não estão neste repositório. Não altere tags durante execução. O estado da seleção ainda é exploratório.
+`Rag.Generation` implementa `IAnswerProvider` com HTTP/JSON nativos e o modelo instrucional `qwen2.5:7b`. Configuração, digest e licença estão em `generation.lock.json`. Requer download adicional de aproximadamente 4,68 GB de artefatos e recursos de execução; não é garantia de requisitos mínimos de memória. Pesos não estão neste repositório. Não altere tags durante execução. A configuração passou dois casos controlados e oito perguntas didáticas; qualidade geral ainda exige avaliação própria.
 
 ```powershell
 dcc32 -B -Usrc -N0bin -Ebin tests/AnswerTests.dpr
 bin/AnswerTests.exe
-ollama pull qwen3:1.7b
+ollama pull qwen2.5:7b
 dcc32 -B -Usrc -N0bin -Ebin tests/GenerationProbe.dpr
 bin/GenerationProbe.exe supported
 bin/GenerationProbe.exe absent
@@ -157,7 +157,7 @@ bin/JsonMessageTests.exe
 
 O teste de apresentação com modelo exige a configuração de geração já descrita. Os demais testes não exigem runtime. Quatro verificações de JSON demonstram a preservação de acentos e aspas na mensagem interna e no envelope HTTP. O conteúdo textual enviado ao modelo usa `EncodeBelow32`, evitando apresentar acentos como escapes Unicode.
 
-Estado atual da geração: a versão 5 respondeu aos dois casos controlados e passou na apresentação em português, mas a repetição das oito perguntas teve seis aprovações e duas rejeições (Q02 e Q03). A configuração permanece exploratória. Não use o resultado anterior de oito aprovações como prova desta versão. Q02 demonstrou que citações existentes podem não sustentar a afirmação; Q03 absteve-se com regra disponível. Essa avaliação deve ser corrigida antes do percurso final do livro.
+Estado atual da geração: `qwen2.5:7b`, instrução versão 11, passou dois casos controlados e as oito perguntas. Os cinco casos positivos também exigem conteúdo mínimo em `claims.text`, além de fonte e citação literal. Os três casos sem regra permitida exigem abstenção. Essas verificações e a leitura das respostas não comprovam qualidade geral ou segurança de produção. Comparações anteriores falharam e permanecem registradas no projeto editorial.
 
 ## Coordenação para a interface
 

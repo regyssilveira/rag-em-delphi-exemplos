@@ -28,7 +28,8 @@ var
   Evidence: TAnswerEvidence;
   I, Passed, Failed: Integer;
   Profile, Question, ExpectedSource, ExpectedEvidence, Id: string;
-  FoundSource, FoundEvidence, ExpectedAnswer: Boolean;
+  FoundSource, FoundEvidence, FoundClaim, ExpectedAnswer: Boolean;
+  ExpectedClaimAny, ExpectedClaimPart: TJSONValue;
 begin
   try
     if ParamCount <> 2 then raise Exception.Create('Use data/corpus data/evaluation/questions.json');
@@ -60,6 +61,9 @@ begin
           ExpectedAnswer := not (QuestionObject.FindValue('expected_source') is TJSONNull);
           ExpectedSource := QuestionObject.FindValue('expected_source').Value;
           ExpectedEvidence := QuestionObject.FindValue('expected_evidence').Value;
+          ExpectedClaimAny := QuestionObject.FindValue('expected_claim_any');
+          if ExpectedAnswer and not (ExpectedClaimAny is TJSONArray) then
+            raise Exception.Create('Critério mínimo da afirmação ausente');
           try
             Context := BuildContext(FuseRankings(Lexical.Search(Question, Profile, 6),
               Vector.Search(Embeddings.EmbedQuery(Question), Embeddings.ModelIdentity, Profile, 6),
@@ -68,11 +72,16 @@ begin
             TFile.WriteAllText(TPath.Combine(ExtractFilePath(ParamStr(0)), 'integrated-' + Id + '.json'), Generator.LastResponse, TEncoding.UTF8);
             FoundSource := False;
             FoundEvidence := False;
+            FoundClaim := False;
             for Claim in Answer.Claims do
             begin
               if (Id = 'Q04') and Claim.Text.TrimLeft.ToLower.StartsWith('sim') then
                 raise Exception.Create('Resposta afirmativa contradiz a regra de não retorno automático');
               Writeln(Id, ' CLAIM ', Claim.Text);
+              if ExpectedAnswer then
+                for ExpectedClaimPart in TJSONArray(ExpectedClaimAny) do
+                  if Claim.Text.ToLower.Contains(ExpectedClaimPart.Value.ToLower) then
+                    FoundClaim := True;
               for Evidence in Claim.Evidence do
               begin
                 Writeln(Id, ' SOURCE ', Evidence.Source.Chunk.Id, ' QUOTE ', Evidence.Quote);
@@ -83,7 +92,7 @@ begin
               end;
             end;
             if (Answer.HasAnswer <> ExpectedAnswer) or
-              (ExpectedAnswer and not (FoundSource and FoundEvidence)) then
+              (ExpectedAnswer and not (FoundSource and FoundEvidence and FoundClaim)) then
               raise Exception.Create('Resposta diverge da evidência esperada');
             Inc(Passed);
             Writeln('OK: ', Id);
@@ -94,6 +103,7 @@ begin
               Writeln('FAIL: ', Id, ' | ', E.Message);
             end;
           end;
+          Flush(Output);
         end;
         Writeln('PASSED=', Passed, ' FAILED=', Failed);
         if Failed > 0 then ExitCode := 1;

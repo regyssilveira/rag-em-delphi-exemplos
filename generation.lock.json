@@ -1,11 +1,11 @@
 {
   "runtime": "Ollama",
   "runtimeVersion": "0.30.5",
-  "model": "qwen3:1.7b",
-  "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
-  "artifactBytes": 1359293444,
-  "license": "Apache-2.0 conforme distribuição consultada",
-  "promptVersion": "answer-prompt-v5-unicode",
+  "model": "qwen2.5:7b",
+  "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e",
+  "artifactBytes": 4683087332,
+  "license": "Apache-2.0",
+  "promptVersion": "answer-prompt-v11-instructional",
   "options": {
     "temperature": 0,
     "seed": 7,
@@ -13,11 +13,11 @@
     "num_predict": 512
   },
   "stream": false,
-  "think": false,
   "validatedPlatform": "Delphi 13 Win32",
-  "selectionStatus": "Configuração exploratória; conferir resultado atual da avaliação integrada antes de adotar.",
+  "selectionStatus": "Dois casos controlados e oito casos didáticos aprovados, com critérios mínimos de afirmação; não comprova qualidade geral.",
   "sources": [
-    "https://ollama.com/library/qwen3:1.7b",
+    "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct",
+    "https://ollama.com/library/qwen2.5:7b",
     "https://docs.ollama.com/api/chat"
   ]
 }

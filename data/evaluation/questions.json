@@ -4,35 +4,51 @@
     "question": "Quem pode liberar um recebimento com divergência?",
     "expected_source": "recebimento.md",
     "expected_evidence": "Somente o supervisor",
-    "profile": "operacional"
+    "profile": "operacional",
+    "expected_claim_any": [
+      "supervisor"
+    ]
   },
   {
     "id": "Q02",
     "question": "O que acontece com o recebimento quando a quantidade difere do pedido?",
     "expected_source": "recebimento.md",
     "expected_evidence": "fica pendente",
-    "profile": "operacional"
+    "profile": "operacional",
+    "expected_claim_any": [
+      "pendente"
+    ]
   },
   {
     "id": "Q03",
     "question": "Qual é o prazo interno para analisar uma devolução?",
     "expected_source": "devolucoes.md",
     "expected_evidence": "dois dias úteis",
-    "profile": "operacional"
+    "profile": "operacional",
+    "expected_claim_any": [
+      "dois dias úteis",
+      "2 dias úteis"
+    ]
   },
   {
     "id": "Q04",
     "question": "Um item devolvido retorna automaticamente ao estoque disponível?",
     "expected_source": "devolucoes.md",
     "expected_evidence": "não retornam automaticamente",
-    "profile": "operacional"
+    "profile": "operacional",
+    "expected_claim_any": [
+      "não"
+    ]
   },
   {
     "id": "Q05",
     "question": "Quem aprova o ajuste de estoque?",
     "expected_source": "estoque.md",
     "expected_evidence": "supervisor",
-    "profile": "supervisor"
+    "profile": "supervisor",
+    "expected_claim_any": [
+      "supervisor"
+    ]
   },
   {
     "id": "Q06",
