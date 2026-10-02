@@ -1,22 +1,25 @@
 # RAG em Delphi — Exemplos
 
-Código de apoio ao livro **RAG em Delphi: Aprenda a criar assistentes de IA que respondem com base nos seus documentos**, de Régys Borges da Silveira.
+Material próprio do livro de Régys Borges da Silveira. Delphi 13 é a versão mínima; licença Apache 2.0 (LICENSE). O livro explica os exemplos sem exigir download deste repositório.
 
-## Estado do projeto
+## Etapa atual
 
-Os exemplos estão em preparação. Ainda não há aplicação executável, instruções de execução ou versão validada correspondente à edição do livro.
+Fundação em Object Pascal: leitura UTF-8, divisão com sobreposição, busca lexical simples e filtragem demonstrativa por perfil. Ainda não é o assistente completo: VCL, persistência, DOCX, PDF, OCR, embeddings e geração estão em desenvolvimento. A pontuação atual é uma referência didática por proporção de termos, não BM25 nem busca semântica. Encontrar termos não prova que a pergunta tem resposta.
 
-## Requisitos e implementação
+## Documentos e avaliação
 
-- Delphi 13 como versão mínima.
-- Object Pascal e recursos que acompanham o Delphi sempre que possível.
-- Bibliotecas de terceiros somente quando a implementação nativa não for possível no escopo definido, com justificativa explícita no livro e na documentação do exemplo.
-- Serviços de modelos, interface e persistência ainda serão definidos.
+`data/corpus` contém procedimentos fictícios do Comércio Aurora. Não são regras legais ou fiscais. `data/evaluation/questions.json` registra perguntas, fontes e evidências esperadas; uma fonte nula significa que a base permitida não sustenta resposta. `data/updates/devolucoes-v2.md` altera o prazo interno para exercitar atualização, sem entrar na base inicial.
 
-Este repositório contém exclusivamente os exemplos e sua documentação. O manuscrito é mantido em repositório editorial privado separado.
+## Compilar e verificar a fundação
 
-Não incluir credenciais nem documentos confidenciais nos exemplos. Os dados de demonstração serão preparados especificamente para o projeto.
+Em um terminal com Delphi 13 configurado, na raiz do repositório:
 
-## Licença
+```powershell
+New-Item -ItemType Directory -Force bin
+dcc32 -B -U"src" -N0"bin" -E"bin" tests/FoundationTests.dpr
+.\bin\FoundationTests.exe .\data\corpus
+```
 
-Apache License 2.0. Consulte LICENSE. Materiais de terceiros, se necessários, terão suas licenças identificadas separadamente.
+O teste retorna código 0 quando passa e 1 quando falha. Não chama serviços nem exige credenciais. Confere leitura, cobertura dos trechos, busca, ausência de correspondência, acesso e argumentos inválidos. Não avalia respostas de IA nem demonstra segurança de produção: o perfil é fornecido pelo chamador e precisa vir de identidade autenticada numa integração real.
+
+Não publicar credenciais, documentos reais ou binários gerados. Dependências adicionais, quando indispensáveis, serão identificadas e justificadas.

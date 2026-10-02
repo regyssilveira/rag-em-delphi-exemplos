@@ -1,0 +1,58 @@
+[
+  {
+    "id": "Q01",
+    "question": "Quem pode liberar um recebimento com divergência?",
+    "expected_source": "recebimento.md",
+    "expected_evidence": "Somente o supervisor",
+    "profile": "operacional"
+  },
+  {
+    "id": "Q02",
+    "question": "O que acontece com o recebimento quando a quantidade difere do pedido?",
+    "expected_source": "recebimento.md",
+    "expected_evidence": "fica pendente",
+    "profile": "operacional"
+  },
+  {
+    "id": "Q03",
+    "question": "Qual é o prazo interno para analisar uma devolução?",
+    "expected_source": "devolucoes.md",
+    "expected_evidence": "dois dias úteis",
+    "profile": "operacional"
+  },
+  {
+    "id": "Q04",
+    "question": "Um item devolvido retorna automaticamente ao estoque disponível?",
+    "expected_source": "devolucoes.md",
+    "expected_evidence": "não retornam automaticamente",
+    "profile": "operacional"
+  },
+  {
+    "id": "Q05",
+    "question": "Quem aprova o ajuste de estoque?",
+    "expected_source": "estoque.md",
+    "expected_evidence": "supervisor",
+    "profile": "supervisor"
+  },
+  {
+    "id": "Q06",
+    "question": "Qual é a comissão do vendedor?",
+    "expected_source": null,
+    "expected_evidence": null,
+    "profile": "operacional"
+  },
+  {
+    "id": "Q07",
+    "question": "Qual é a alíquota do imposto para este produto?",
+    "expected_source": null,
+    "expected_evidence": null,
+    "profile": "operacional"
+  },
+  {
+    "id": "Q08",
+    "question": "Quem aprova o ajuste de estoque?",
+    "expected_source": null,
+    "expected_evidence": null,
+    "profile": "operacional"
+  }
+]
