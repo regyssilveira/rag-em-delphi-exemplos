@@ -1,0 +1,23 @@
+{
+  "runtime": "Ollama",
+  "runtimeVersion": "0.30.5",
+  "model": "qwen3:1.7b",
+  "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+  "artifactBytes": 1359293444,
+  "license": "Apache-2.0 conforme distribuição consultada",
+  "promptVersion": "answer-prompt-v2",
+  "options": {
+    "temperature": 0,
+    "seed": 7,
+    "num_ctx": 8192,
+    "num_predict": 512
+  },
+  "stream": false,
+  "think": false,
+  "validatedPlatform": "Delphi 13 Win32",
+  "selectionStatus": "Candidato: prova controlada aprovada; avaliação integrada em andamento",
+  "sources": [
+    "https://ollama.com/library/qwen3:1.7b",
+    "https://docs.ollama.com/api/chat"
+  ]
+}

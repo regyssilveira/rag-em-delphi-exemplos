@@ -117,3 +117,26 @@ bin/ContextDemo.exe
 Os 11 testes de seleção independem de runtime e base. `ContextDemo` exige a base final produzida por `CacheDemo --prepare data/corpus data/updates`, descrito acima; usa recuperação lexical local, sem chamadas ao modelo. Na prova, selecionou dois trechos de devoluções e conservou o prazo atualizado de três dias úteis. Caminhos de origem e comprimento serializado variam conforme o checkout.
 
 JSON preserva separação e texto, mas não impede que um modelo siga instruções maliciosas do documento. Fontes selecionadas também podem ser insuficientes para responder. A integração de geração, validação de citações e avaliação de respostas ainda está em produção.
+
+## Geração e avaliação exploratória
+
+`Rag.Answers` exige afirmações com citações literais e resolve os rótulos usando o contexto local. Doze testes do contrato foram executados no Delphi 13. Uma citação existente não comprova que a afirmação decorre dela: a avaliação semântica continua necessária.
+
+`Rag.Generation` implementa `IAnswerProvider` com HTTP/JSON nativos e o candidato `qwen3:1.7b`. Configuração, digest e licença estão em `generation.lock.json`. Requer download adicional de aproximadamente 1,36 GB de artefatos e recursos de execução; não é garantia de requisitos mínimos de memória. Pesos não estão neste repositório. Não altere tags durante execução. O estado da seleção ainda é exploratório.
+
+```powershell
+dcc32 -B -Usrc -N0bin -Ebin tests/AnswerTests.dpr
+bin/AnswerTests.exe
+ollama pull qwen3:1.7b
+dcc32 -B -Usrc -N0bin -Ebin tests/GenerationProbe.dpr
+bin/GenerationProbe.exe supported
+bin/GenerationProbe.exe absent
+dcc32 -B -Usrc -N0bin -Ebin tests/IntegratedDemo.dpr
+bin/IntegratedDemo.exe data/corpus data/evaluation/questions.json
+```
+
+O runtime precisa estar ativo. A prova controlada usa um texto próprio com prazo de três dias úteis; a avaliação integrada usa os três documentos originais, onde o prazo é de dois dias úteis. Ela não modifica o corpus nem usa a base alterada do capítulo 10. Arquivos gerados ficam em `bin`.
+
+A instrução inicial falhou na pergunta de comissão; a versão 2 aprovada na prova controlada exige conferir a informação solicitada e copiar literalmente. Dois casos aprovados não comprovam confiabilidade geral. `IntegratedDemo` informa os casos aprovados e rejeitados; a ocorrência da evidência esperada não substitui leitura de todas as afirmações.
+
+O adaptador limita caracteres de entrada, solicita janela de 8.192 tokens e saída de até 512 tokens. Limite de caracteres não é contagem de tokens. Respostas cortadas por limite de saída são recusadas. O limite HTTP é conferido após receber a resposta. `LastResponse` contém saída bruta para diagnóstico: não registrar dados de documentos reais sem uma política adequada. Instâncias não devem ser compartilhadas entre chamadas concorrentes. Autenticação, resistência a instruções maliciosas e interface VCL ainda estão em produção.
