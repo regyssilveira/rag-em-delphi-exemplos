@@ -89,5 +89,27 @@ begin
     try QueryPreparedBase(Base, 'Quem aprova?', 'supervisor', Embeddings, Generator);
     except on E: EArgumentException do Failed := True; end;
     Check(Failed and (EmbeddedCalls = 1) and (GeneratedCalls = 1), 'modelo incompatível recusado antes de chamadas');
+    Base.ModelIdentity := Embeddings.ModelIdentity;
+    EmbeddedCalls := 0;
+    GeneratedCalls := 0;
+    Failed := False;
+    try
+      QueryPreparedBase(Base, 'Quem aprova?', 'supervisor', Embeddings, Generator,
+        function: Boolean begin Result := True; end);
+    except on E: EAbort do Failed := True; end;
+    Check(Failed and (EmbeddedCalls = 0) and (GeneratedCalls = 0), 'cancelamento inicial não chama provedores');
+    Failed := False;
+    try
+      QueryPreparedBase(Base, 'Quem aprova?', 'supervisor', Embeddings, Generator,
+        function: Boolean begin Result := EmbeddedCalls > 0; end);
+    except on E: EAbort do Failed := True; end;
+    Check(Failed and (EmbeddedCalls = 1) and (GeneratedCalls = 0), 'cancelamento após embedding impede geração');
+    EmbeddedCalls := 0;
+    Failed := False;
+    try
+      QueryPreparedBase(Base, 'Quem aprova?', 'supervisor', Embeddings, Generator,
+        function: Boolean begin Result := GeneratedCalls > 0; end);
+    except on E: EAbort do Failed := True; end;
+    Check(Failed and (EmbeddedCalls = 1) and (GeneratedCalls = 1), 'cancelamento após geração não retorna resposta');
   except on E: Exception do begin Writeln(E.Message); ExitCode := 1; end; end;
 end.

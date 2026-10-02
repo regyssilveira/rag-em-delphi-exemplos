@@ -168,4 +168,22 @@ dcc32 -B -Usrc -N0bin -Ebin tests/AssistantTests.dpr
 bin/AssistantTests.exe
 ```
 
-Cinco verificações com provedores sintéticos identificados: chamadas/origem, coleção sem acesso, perfil desconhecido, pergunta vazia e modelo incompatível. São provas de coordenação; não avaliam significado ou geração real. A janela VCL ainda precisa de implementação e verificação próprias.
+Oito verificações com provedores sintéticos identificados: chamadas/origem, coleção sem acesso, perfil desconhecido, pergunta vazia, modelo incompatível e cancelamento antes ou depois de chamadas. O cancelamento é cooperativo; não interrompe HTTP em andamento. São provas de coordenação, distintas da prova real pela janela descrita abaixo.
+
+## Projeto VCL em produção
+
+`app/RagAssistant.dpr` cria a janela sem arquivo DFM. A consulta usa um thread próprio e provedores privados; controles são atualizados no evento de conclusão, na thread principal. Enquanto há consulta, nova operação e fechamento são recusados. Cancelamento é cooperativo: aguarda a chamada em andamento e descarta o resultado.
+
+```powershell
+dcc32 -B -Usrc -N0bin -Ebin app/RagAssistant.dpr
+bin/RagAssistant.exe
+```
+
+Esta etapa abre uma base já preparada, como `bin/integrated-base.json`, criada pelo exemplo de avaliação. O percurso pela janela foi executado com modelos reais em modo de teste oculto: recebimento com fonte, abstenção operacional sobre ajuste, consulta como supervisor, conferência da passagem, limpeza ao mudar perfil e cancelamento imediato. Não equivale a inspeção visual nem interação humana. O perfil é didático e não autentica um usuário do ERP.
+
+A importação na janela ainda está em produção. `Rag.Import` já compõe leitura, reimportação e remoção de fontes, sem gravar a base. Onze verificações cobrem DOCX, PDF digital, classificação, nomes repetidos, remoção de todas as páginas e rejeição explícita de páginas sem texto. Requer o PDFium fixado para os casos PDF. OCR permanece pendente.
+
+```powershell
+dcc32 -B -Usrc -N0bin -Ebin tests/ImportTests.dpr
+bin/ImportTests.exe . (Resolve-Path 'bin/pdfium/bin/pdfium.dll').Path
+```
