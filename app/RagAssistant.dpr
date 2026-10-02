@@ -8,16 +8,17 @@ begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TAssistantForm, AssistantForm);
-  if (ParamCount = 3) and (ParamStr(1) = '--flow-check') then
+  if (ParamCount = 3) and ((ParamStr(1) = '--flow-check') or (ParamStr(1) = '--admin-check')) then
   begin
-    AssistantForm.RunFlowCheck(ParamStr(2), ParamStr(3));
+    if ParamStr(1) = '--admin-check' then AssistantForm.RunAdminCheck(ParamStr(2), ParamStr(3))
+    else AssistantForm.RunFlowCheck(ParamStr(2), ParamStr(3));
     AssistantForm.Free;
   end
   else Application.Run;
   except
     on E: Exception do
     begin
-      if (ParamCount = 3) and (ParamStr(1) = '--flow-check') then
+      if (ParamCount = 3) and ((ParamStr(1) = '--flow-check') or (ParamStr(1) = '--admin-check')) then
       begin
         if not TFile.Exists(ParamStr(3)) then
           TFile.WriteAllText(ParamStr(3), '{"passed":false}', TEncoding.UTF8);

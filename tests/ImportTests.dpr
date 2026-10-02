@@ -56,5 +56,15 @@ begin
     try MergeImportedDocuments(Documents, [TPath.Combine(TemporaryDirectory, 'recebimento.md')], 'operacional', Pdfium);
     except on E: EReadError do Failed := E.Message.Contains('Identidade repetida'); end;
     Check(Failed and (Documents[0].Text = Before), 'nomes iguais de origens diferentes não substituem dados');
+    TFile.WriteAllText(TPath.Combine(TemporaryDirectory, 'grande.txt'),
+      StringOfChar('a', MaxImportedTextChars), TEncoding.UTF8);
+    Updated := MergeImportedDocuments(nil, [TPath.Combine(TemporaryDirectory, 'grande.txt')], 'operacional', Pdfium);
+    Check(Length(Updated[0].Text) = MaxImportedTextChars, 'limite exato de texto aceito');
+    Failed := False;
+    try MergeImportedDocuments(Documents, [TPath.Combine(TemporaryDirectory, 'grande.txt')], 'operacional', Pdfium);
+    except on E: EReadError do Failed := E.Message.Contains('Limite total'); end;
+    Check(Failed and (Length(Documents) = 2), 'texto agregado excessivo recusado sem alterar coleção anterior');
+    Updated := MergeImportedDocuments(Updated, [TPath.Combine(TemporaryDirectory, 'grande.txt')], 'supervisor', Pdfium);
+    Check((Length(Updated) = 1) and (Updated[0].Access = 'supervisor'), 'reimportação não conta texto substituído duas vezes');
   except on E: Exception do begin Writeln(E.Message); ExitCode := 1; end; end;
 end.

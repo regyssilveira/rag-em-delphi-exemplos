@@ -4,6 +4,8 @@ interface
 
 uses System.SysUtils, Rag.Types;
 
+const MaxImportedTextChars = 500000;
+
 function MergeImportedDocuments(const Existing: TArray<TDocument>;
   const FileNames: TArray<string>; const Access, PdfiumPath: string): TArray<TDocument>;
 function RemoveDocumentSource(const Existing: TArray<TDocument>;
@@ -37,7 +39,7 @@ function MergeImportedDocuments(const Existing: TArray<TDocument>;
   const FileNames: TArray<string>; const Access, PdfiumPath: string): TArray<TDocument>;
 var Documents: TList<TDocument>; InputPaths, Ids: TDictionary<string, Boolean>;
   FileName, FullPath: string; Imported: TArray<TDocument>; Document: TDocument;
-  I: Integer;
+  I: Integer; TotalChars: Int64;
 begin
   if (Access <> 'operacional') and (Access <> 'supervisor') then
     raise EArgumentException.Create('Classificação de acesso desconhecida');
@@ -48,6 +50,10 @@ begin
   Ids := TDictionary<string, Boolean>.Create(TIStringComparer.Ordinal);
   try
     Documents.AddRange(Existing);
+    TotalChars := 0;
+    for Document in Documents do Inc(TotalChars, Length(Document.Text));
+    if TotalChars > MaxImportedTextChars then
+      raise EReadError.Create('Limite total de texto excedido');
     for FileName in FileNames do
     begin
       FullPath := TPath.GetFullPath(FileName);
@@ -66,7 +72,14 @@ begin
           raise EReadError.CreateFmt('Origem %s, página %d: sem texto extraído. Confira se a página é branca ou necessita de OCR.',
             [Document.Source, Document.PageNumber]);
       for I := Documents.Count - 1 downto 0 do
-        if SameSource(Documents[I].Source, FullPath) then Documents.Delete(I);
+        if SameSource(Documents[I].Source, FullPath) then
+        begin
+          Dec(TotalChars, Length(Documents[I].Text));
+          Documents.Delete(I);
+        end;
+      for Document in Imported do Inc(TotalChars, Length(Document.Text));
+      if TotalChars > MaxImportedTextChars then
+        raise EReadError.Create('Limite total de texto excedido');
       Documents.AddRange(Imported);
       if Documents.Count > 10000 then raise EReadError.Create('Limite de documentos excedido');
     end;

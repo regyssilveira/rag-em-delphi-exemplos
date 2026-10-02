@@ -15,6 +15,14 @@ type
     Response: TAssistantResponse;
     ErrorMessage: string;
     WasCancelled: Boolean;
+    ImportFiles: TArray<string>;
+    ImportAccess, PdfiumPath: string;
+    ImportMode, Committed: Boolean;
+    RemoveMode: Boolean;
+    CatalogMode: Boolean;
+    CatalogSources: TArray<string>;
+    RemoveSource: string;
+    ImportSummary: string;
     constructor Create(const BasePath, Question, Profile: string);
     function CancellationRequested: Boolean;
   end;
@@ -24,13 +32,19 @@ type
     FBasePath: TEdit;
     FQuestion: TMemo;
     FProfile: TComboBox;
-    FAsk, FBrowse, FCancel: TButton;
+    FAsk, FBrowse, FCancel, FImport, FRemove, FCatalog: TButton;
+    FOrigins: TComboBox;
+    FImportAccess: TComboBox;
     FAnswer, FSource: TMemo;
     FSources: TListBox;
     FStatus: TLabel;
     FWorker: TQueryWorker;
     FResponse: TAssistantResponse;
     procedure BrowseBase(Sender: TObject);
+    procedure ImportDocuments(Sender: TObject);
+    procedure StartImport(const Files: TArray<string>);
+    procedure RemoveSource(Sender: TObject);
+    procedure LoadCatalog(Sender: TObject);
     procedure Ask(Sender: TObject);
     procedure Finished(Sender: TObject);
     procedure SelectSource(Sender: TObject);
@@ -41,6 +55,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     procedure RunFlowCheck(const BasePath, ReportPath: string);
+    procedure RunAdminCheck(const BasePath, ReportPath: string);
   end;
 
 var AssistantForm: TAssistantForm;
@@ -49,12 +64,12 @@ implementation
 
 uses System.IOUtils, System.JSON, Winapi.Windows, Vcl.Dialogs,
   Rag.Persistence, Rag.Embeddings, Rag.Generation, Rag.Answers,
-  Rag.Context, Rag.Presentation;
+  Rag.Context, Rag.Presentation, Rag.BaseEditor, Rag.Types;
 
 constructor TQueryWorker.Create(const BasePath, Question, Profile: string);
 begin
   inherited Create(True);
-  FreeOnTerminate := True;
+  FreeOnTerminate := False;
   FBasePath := BasePath;
   FQuestion := Question;
   FProfile := Profile;
@@ -67,13 +82,49 @@ end;
 
 procedure TQueryWorker.Execute;
 var Base: TPreparedBase; Embeddings: IEmbeddingProvider; Generator: IAnswerProvider;
+  Stats: TUpdateStats;
+  Origins: TStringList; Document: TDocument;
 begin
   try
     try
     if Terminated then Exit;
+    if CatalogMode then
+    begin
+      Base := LoadPreparedBase(FBasePath,
+        'embeddinggemma:300m@85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1|retrieval-prefix-v1|dim=768');
+      Origins := TStringList.Create;
+      try
+        Origins.Sorted := True;
+        Origins.CaseSensitive := False;
+        Origins.Duplicates := dupIgnore;
+        for Document in Base.Documents do Origins.Add(Document.Source);
+        CatalogSources := Origins.ToStringArray;
+      finally Origins.Free; end;
+      Exit;
+    end;
+    if RemoveMode then
+    begin
+      Base := RemoveSourceAndSave(FBasePath, RemoveSource,
+        'embeddinggemma:300m@85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1|retrieval-prefix-v1|dim=768',
+        function: Boolean begin Result := Terminated; end);
+      Committed := True;
+      ImportSummary := Format('Origem removida da base; %d documentos restantes. Arquivo original preservado.',
+        [Length(Base.Documents)]);
+      Exit;
+    end;
     Embeddings := TOllamaEmbeddingProvider.Create('embeddinggemma:300m',
       '85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1', 768);
     if Terminated then Exit;
+    if ImportMode then
+    begin
+      Base := ImportPrepareSave(FBasePath, ImportFiles, ImportAccess, PdfiumPath,
+        Embeddings, 768, 380, 60, Stats,
+        function: Boolean begin Result := Terminated; end);
+      Committed := True;
+      ImportSummary := Format('Base gravada: %d documentos, %d vetores novos, %d reutilizados.',
+        [Length(Base.Documents), Stats.Embedded, Stats.Reused]);
+      Exit;
+    end;
     Base := LoadPreparedBase(FBasePath, Embeddings.ModelIdentity);
     Generator := TOllamaAnswerProvider.Create;
     Response := QueryPreparedBase(Base, FQuestion, FProfile, Embeddings, Generator,
@@ -83,7 +134,7 @@ begin
       on E: Exception do ErrorMessage := E.Message;
     end;
   finally
-    if Terminated then WasCancelled := True;
+    if Terminated and not Committed then WasCancelled := True;
   end;
 end;
 
@@ -103,7 +154,7 @@ begin
   TopPanel := TPanel.Create(Self);
   TopPanel.Parent := Self;
   TopPanel.Align := alTop;
-  TopPanel.Height := 84;
+  TopPanel.Height := 172;
   TopPanel.Width := ClientWidth;
   TopPanel.BevelOuter := bvNone;
   Title := TLabel.Create(Self);
@@ -121,6 +172,36 @@ begin
   FBrowse.Anchors := [akTop, akRight];
   FBrowse.Caption := 'Abrir base preparada';
   FBrowse.OnClick := BrowseBase;
+  FImportAccess := TComboBox.Create(Self);
+  FImportAccess.Parent := TopPanel;
+  FImportAccess.SetBounds(16, 84, 230, 27);
+  FImportAccess.Style := csDropDownList;
+  FImportAccess.Items.Add('operacional');
+  FImportAccess.Items.Add('supervisor');
+  FImportAccess.ItemIndex := 0;
+  FImportAccess.Hint := 'Classificação dos documentos importados';
+  FImportAccess.ShowHint := True;
+  FImport := TButton.Create(Self);
+  FImport.Parent := TopPanel;
+  FImport.SetBounds(264, 82, 330, 30);
+  FImport.Caption := 'Importar ou atualizar documentos';
+  FImport.OnClick := ImportDocuments;
+  FRemove := TButton.Create(Self);
+  FRemove.Parent := TopPanel;
+  FRemove.SetBounds(612, 82, 342, 30);
+  FRemove.Anchors := [akTop, akRight];
+  FRemove.Caption := 'Remover origem selecionada';
+  FRemove.OnClick := RemoveSource;
+  FCatalog := TButton.Create(Self);
+  FCatalog.Parent := TopPanel;
+  FCatalog.SetBounds(16, 126, 230, 30);
+  FCatalog.Caption := 'Carregar origens da base';
+  FCatalog.OnClick := LoadCatalog;
+  FOrigins := TComboBox.Create(Self);
+  FOrigins.Parent := TopPanel;
+  FOrigins.SetBounds(264, 128, 690, 27);
+  FOrigins.Anchors := [akLeft, akTop, akRight];
+  FOrigins.Style := csDropDownList;
   QuestionPanel := TPanel.Create(Self);
   QuestionPanel.Parent := Self;
   QuestionPanel.Top := TopPanel.Height;
@@ -156,7 +237,7 @@ begin
   FCancel.Parent := QuestionPanel;
   FCancel.SetBounds(774, 108, 180, 30);
   FCancel.Anchors := [akTop, akRight];
-  FCancel.Caption := 'Cancelar consulta';
+  FCancel.Caption := 'Cancelar operação';
   FCancel.OnClick := CancelQuery;
   FStatus := TLabel.Create(Self);
   FStatus.Parent := Self;
@@ -194,6 +275,11 @@ end;
 procedure TAssistantForm.SetBusy(Value: Boolean);
 begin
   FAsk.Enabled := not Value;
+  FImport.Enabled := not Value;
+  FRemove.Enabled := not Value;
+  FCatalog.Enabled := not Value;
+  FOrigins.Enabled := not Value;
+  FImportAccess.Enabled := not Value;
   FBrowse.Enabled := not Value;
   FBasePath.Enabled := not Value;
   FQuestion.Enabled := not Value;
@@ -213,6 +299,7 @@ end;
 
 procedure TAssistantForm.ProfileChanged(Sender: TObject);
 begin
+  if Sender = FBasePath then FOrigins.Clear;
   FResponse := Default(TAssistantResponse);
   FAnswer.Clear;
   FSource.Clear;
@@ -252,19 +339,104 @@ begin
   FWorker.Start;
 end;
 
+procedure TAssistantForm.ImportDocuments(Sender: TObject);
+var Dialog: TOpenDialog; Files: TArray<string>; I: Integer;
+begin
+  if FWorker <> nil then Exit;
+  Dialog := TOpenDialog.Create(Self);
+  try
+    Dialog.Filter := 'Documentos (*.txt;*.md;*.docx;*.pdf)|*.txt;*.md;*.docx;*.pdf';
+    Dialog.Options := Dialog.Options + [ofFileMustExist, ofAllowMultiSelect];
+    if Dialog.Execute then
+    begin
+      SetLength(Files, Dialog.Files.Count);
+      for I := 0 to Dialog.Files.Count - 1 do Files[I] := Dialog.Files[I];
+      StartImport(Files);
+    end;
+  finally Dialog.Free; end;
+end;
+
+procedure TAssistantForm.StartImport(const Files: TArray<string>);
+begin
+  if FWorker <> nil then Exit;
+  if Trim(FBasePath.Text).IsEmpty then
+  begin
+    FStatus.Caption := ' Informe o caminho do arquivo de base a criar ou atualizar.';
+    Exit;
+  end;
+  ProfileChanged(Self);
+  FWorker := TQueryWorker.Create(FBasePath.Text, '', '');
+  FWorker.ImportMode := True;
+  FWorker.ImportFiles := Copy(Files);
+  FWorker.ImportAccess := FImportAccess.Text;
+  FWorker.PdfiumPath := TPath.Combine(ExtractFilePath(Application.ExeName), 'pdfium/bin/pdfium.dll');
+  FWorker.OnTerminate := Finished;
+  SetBusy(True);
+  FStatus.Caption := ' Importando e preparando documentos; aguarde a gravação.';
+  FWorker.Start;
+end;
+
+procedure TAssistantForm.LoadCatalog(Sender: TObject);
+begin
+  if FWorker <> nil then Exit;
+  FOrigins.Clear;
+  FWorker := TQueryWorker.Create(FBasePath.Text, '', '');
+  FWorker.CatalogMode := True;
+  FWorker.OnTerminate := Finished;
+  SetBusy(True);
+  FStatus.Caption := ' Carregando catálogo administrativo de origens; aguarde.';
+  FWorker.Start;
+end;
+
+procedure TAssistantForm.RemoveSource(Sender: TObject);
+var SourcePath: string;
+begin
+  if FWorker <> nil then Exit;
+  if FOrigins.ItemIndex < 0 then
+  begin
+    FStatus.Caption := ' Carregue o catálogo e selecione uma origem para remover da base.';
+    Exit;
+  end;
+  SourcePath := FOrigins.Text;
+  if MessageDlg('Remover todos os documentos e trechos desta origem da base? ' +
+    SourcePath + sLineBreak + 'O arquivo original será preservado.',
+    mtConfirmation, [mbYes, mbNo], 0) <> mrYes then Exit;
+  ProfileChanged(Self);
+  FWorker := TQueryWorker.Create(FBasePath.Text, '', '');
+  FWorker.RemoveMode := True;
+  FWorker.RemoveSource := SourcePath;
+  FWorker.OnTerminate := Finished;
+  SetBusy(True);
+  FStatus.Caption := ' Removendo origem da base; aguarde a confirmação.';
+  FWorker.Start;
+end;
+
 procedure TAssistantForm.Finished(Sender: TObject);
 var Worker: TQueryWorker; Source: TContextSource;
 begin
   Worker := TQueryWorker(Sender);
   try
+    if (Worker.ImportMode or Worker.RemoveMode) and Worker.Committed then
+    begin
+      FOrigins.Clear;
+      FStatus.Caption := ' ' + Worker.ImportSummary;
+      Exit;
+    end;
     if Worker.WasCancelled or Worker.CancellationRequested then
     begin
-      FStatus.Caption := ' Consulta cancelada; nenhum resultado dessa operação foi apresentado.';
+      FStatus.Caption := ' Operação cancelada; nenhum resultado dessa operação foi apresentado.';
       Exit;
     end;
     if Worker.ErrorMessage <> '' then
     begin
-      FStatus.Caption := ' Consulta não concluída: ' + Worker.ErrorMessage;
+      FStatus.Caption := ' Operação não concluída: ' + Worker.ErrorMessage;
+      Exit;
+    end;
+    if Worker.CatalogMode then
+    begin
+      FOrigins.Items.AddStrings(Worker.CatalogSources);
+      if FOrigins.Items.Count > 0 then FOrigins.ItemIndex := 0;
+      FStatus.Caption := ' Catálogo administrativo carregado; selecione uma origem.';
       Exit;
     end;
     FResponse := Worker.Response;
@@ -275,6 +447,8 @@ begin
   finally
     FWorker := nil;
     SetBusy(False);
+    TThread.ForceQueue(nil,
+      procedure begin Worker.Free; end);
   end;
 end;
 
@@ -299,12 +473,61 @@ end;
 procedure TAssistantForm.CheckClose(Sender: TObject; var CanClose: Boolean);
 begin
   CanClose := FWorker = nil;
-  if not CanClose then FStatus.Caption := ' Aguarde a consulta terminar antes de fechar.';
+  if not CanClose then FStatus.Caption := ' Aguarde a operação terminar antes de fechar.';
+end;
+
+procedure TAssistantForm.RunAdminCheck(const BasePath, ReportPath: string);
+var TestBase, Selected: string; Started: UInt64; Base: TPreparedBase;
+  Report: TJSONObject;
+  procedure WaitForWorker;
+  begin
+    Started := GetTickCount64;
+    while FWorker <> nil do
+    begin
+      Application.ProcessMessages;
+      CheckSynchronize(10);
+      if GetTickCount64 - Started > 60000 then raise Exception.Create('Tempo administrativo excedido');
+    end;
+  end;
+begin
+  TestBase := TPath.Combine(ExtractFilePath(ReportPath), 'admin-base-' + UIntToStr(GetTickCount64) + '.json');
+  TFile.Copy(BasePath, TestBase);
+  FBasePath.Text := TestBase;
+  FCatalog.Click;
+  WaitForWorker;
+  if FOrigins.Items.Count <> 3 then raise Exception.Create('Catálogo não contém as três origens');
+  Selected := FOrigins.Items[0];
+  FWorker := TQueryWorker.Create(TestBase, '', '');
+  FWorker.RemoveMode := True;
+  FWorker.RemoveSource := Selected;
+  FWorker.OnTerminate := Finished;
+  SetBusy(True);
+  FWorker.Start;
+  WaitForWorker;
+  if not string(FStatus.Caption).Contains('Origem removida') then raise Exception.Create('Remoção não confirmada');
+  if FOrigins.Items.Count <> 0 then raise Exception.Create('Catálogo obsoleto permaneceu visível');
+  Base := LoadPreparedBase(TestBase,
+    'embeddinggemma:300m@85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1|retrieval-prefix-v1|dim=768');
+  if Length(Base.Documents) <> 2 then raise Exception.Create('Documentos não removidos');
+  if not TFile.Exists(Selected) then raise Exception.Create('Original ausente');
+  FCatalog.Click;
+  WaitForWorker;
+  if (FOrigins.Items.Count <> 2) or (FOrigins.Items.IndexOf(Selected) >= 0) then
+    raise Exception.Create('Catálogo não refletiu remoção');
+  Report := TJSONObject.Create;
+  try
+    Report.AddPair('passed', TJSONBool.Create(True));
+    Report.AddPair('scope', 'Catálogo e worker de remoção por handlers VCL em cópia da base; não exercita diálogo de confirmação nem inspeção visual.');
+    Report.AddPair('remainingDocuments', TJSONNumber.Create(Length(Base.Documents)));
+    Report.AddPair('originalPreserved', TJSONBool.Create(True));
+    TFile.WriteAllText(ReportPath, Report.ToJSON, TEncoding.UTF8);
+  finally Report.Free; end;
 end;
 
 procedure TAssistantForm.RunFlowCheck(const BasePath, ReportPath: string);
 var Report: TJSONObject; Checks: TJSONArray; Started: UInt64; CanClose: Boolean;
   OriginalWorker: TQueryWorker; Source: TContextSource;
+  ImportInput, ImportBase, BeforeImport: string; ImportedBase: TPreparedBase;
 
   procedure Check(Value: Boolean; const Name: string);
   begin
@@ -383,9 +606,31 @@ begin
     Check((FSources.Count = 0) and FAnswer.Lines.Text.IsEmpty and
       string(FStatus.Caption).Contains('cancelada') and FAsk.Enabled,
       'cancelamento descarta resultado e libera próxima consulta');
+    ImportBase := TPath.Combine(ExtractFilePath(ReportPath), 'vcl-import-' + UIntToStr(GetTickCount64) + '.json');
+    ImportInput := ChangeFileExt(ImportBase, '.txt');
+    TFile.WriteAllText(ImportInput, 'O supervisor aprova a contagem de estoque.', TEncoding.UTF8);
+    FBasePath.Text := ImportBase;
+    FImportAccess.ItemIndex := 0;
+    StartImport([ImportInput]);
+    Check(not FImport.Enabled and not FAsk.Enabled, 'importação bloqueia operações concorrentes');
+    WaitForQuery;
+    Check(TFile.Exists(ImportBase) and string(FStatus.Caption).Contains('Base gravada'), 'importação VCL grava base com embeddings reais');
+    ImportedBase := LoadPreparedBase(ImportBase,
+      'embeddinggemma:300m@85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1|retrieval-prefix-v1|dim=768');
+    Check((Length(ImportedBase.Documents) = 1) and (Length(ImportedBase.Items) = 1), 'base importada reabre com documento e vetor');
+    FImportAccess.ItemIndex := 1;
+    StartImport([ImportInput]);
+    WaitForQuery;
+    ImportedBase := LoadPreparedBase(ImportBase,
+      'embeddinggemma:300m@85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1|retrieval-prefix-v1|dim=768');
+    Check((ImportedBase.Documents[0].Access = 'supervisor') and string(FStatus.Caption).Contains('1 reutilizados'), 'reimportação VCL atualiza classificação e reutiliza vetor');
+    BeforeImport := TFile.ReadAllText(ImportBase, TEncoding.UTF8);
+    StartImport([ImportInput + '.ausente']);
+    WaitForQuery;
+    Check((TFile.ReadAllText(ImportBase, TEncoding.UTF8) = BeforeImport) and string(FStatus.Caption).Contains('não concluída'), 'falha de importação conserva base anterior');
     Report.RemovePair('passed').Free;
     Report.AddPair('passed', TJSONBool.Create(True));
-    Report.AddPair('scope', 'Fluxo real por controles e handlers VCL em janela oculta; não aprova captura visual nem importação.');
+    Report.AddPair('scope', 'Consulta e importação real por controles e handlers VCL em janela oculta; não aprova inspeção visual, OCR ou remoção pela janela.');
     TFile.WriteAllText(ReportPath, Report.ToJSON, TEncoding.UTF8);
   finally Report.Free; end;
 end;
