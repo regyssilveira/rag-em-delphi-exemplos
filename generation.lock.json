@@ -5,7 +5,7 @@
   "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
   "artifactBytes": 1359293444,
   "license": "Apache-2.0 conforme distribuição consultada",
-  "promptVersion": "answer-prompt-v3",
+  "promptVersion": "answer-prompt-v5-unicode",
   "options": {
     "temperature": 0,
     "seed": 7,
@@ -15,7 +15,7 @@
   "stream": false,
   "think": false,
   "validatedPlatform": "Delphi 13 Win32",
-  "selectionStatus": "Configuração executada nos oito casos didáticos; não comprova qualidade geral.",
+  "selectionStatus": "Configuração exploratória; conferir resultado atual da avaliação integrada antes de adotar.",
   "sources": [
     "https://ollama.com/library/qwen3:1.7b",
     "https://docs.ollama.com/api/chat"

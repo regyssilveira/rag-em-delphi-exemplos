@@ -70,6 +70,8 @@ begin
             FoundEvidence := False;
             for Claim in Answer.Claims do
             begin
+              if (Id = 'Q04') and Claim.Text.TrimLeft.ToLower.StartsWith('sim') then
+                raise Exception.Create('Resposta afirmativa contradiz a regra de não retorno automático');
               Writeln(Id, ' CLAIM ', Claim.Text);
               for Evidence in Claim.Evidence do
               begin

@@ -140,3 +140,21 @@ O runtime precisa estar ativo. A prova controlada usa um texto próprio com praz
 A instrução inicial falhou na pergunta de comissão; a versão 2 aprovada na prova controlada exige conferir a informação solicitada e copiar literalmente. Dois casos aprovados não comprovam confiabilidade geral. `IntegratedDemo` informa os casos aprovados e rejeitados; a ocorrência da evidência esperada não substitui leitura de todas as afirmações.
 
 O adaptador limita caracteres de entrada, solicita janela de 8.192 tokens e saída de até 512 tokens. Limite de caracteres não é contagem de tokens. Respostas cortadas por limite de saída são recusadas. O limite HTTP é conferido após receber a resposta. `LastResponse` contém saída bruta para diagnóstico: não registrar dados de documentos reais sem uma política adequada. Instâncias não devem ser compartilhadas entre chamadas concorrentes. Autenticação, resistência a instruções maliciosas e interface VCL ainda estão em produção.
+
+## Apresentação de respostas e mensagem Unicode
+
+`Rag.Presentation` mostra afirmações acompanhadas de origem, página quando disponível, trecho, posição e citação. Ausência de evidência, serviço indisponível e resposta inválida têm mensagens distintas. Oito testes estruturais e dois casos de geração controlada foram executados em Delphi 13, incluindo a conferência específica do português na resposta positiva. Não é prova visual VCL nem validação semântica geral.
+
+```powershell
+dcc32 -B -Usrc -N0bin -Ebin tests/PresentationTests.dpr
+bin/PresentationTests.exe
+dcc32 -B -Usrc -N0bin -Ebin tests/PresentationDemo.dpr
+bin/PresentationDemo.exe supported
+bin/PresentationDemo.exe absent
+dcc32 -B -Usrc -N0bin -Ebin tests/JsonMessageTests.dpr
+bin/JsonMessageTests.exe
+```
+
+O teste de apresentação com modelo exige a configuração de geração já descrita. Os demais testes não exigem runtime. Quatro verificações de JSON demonstram a preservação de acentos e aspas na mensagem interna e no envelope HTTP. O conteúdo textual enviado ao modelo usa `EncodeBelow32`, evitando apresentar acentos como escapes Unicode.
+
+Estado atual da geração: a versão 5 respondeu aos dois casos controlados e passou na apresentação em português, mas a repetição das oito perguntas teve seis aprovações e duas rejeições (Q02 e Q03). A configuração permanece exploratória. Não use o resultado anterior de oito aprovações como prova desta versão. Q02 demonstrou que citações existentes podem não sustentar a afirmação; Q03 absteve-se com regra disponível. Essa avaliação deve ser corrigida antes do percurso final do livro.

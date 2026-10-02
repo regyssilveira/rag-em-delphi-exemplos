@@ -19,6 +19,7 @@ Antes de responder, identifique qual informação a pergunta solicita. Confira s
 Se a informação solicitada não aparece explicitamente, use insufficient e claims vazio. Não transforme um dado disponível em resposta para uma regra diferente. Não complete lacunas.
 Cada afirmação deve ser sustentada pelas citações que a acompanham. Não invente prazos, fontes ou citações. Copie a citação exatamente, inclusive maiúsculas, minúsculas e acentos, sem revisar sua grafia.
 Responda somente ao que foi perguntado, de forma breve. Separe regras diferentes em afirmações diferentes. Cada afirmação deve ter sua própria passagem de suporte.
+O campo text deve estar em português brasileiro. Não traduza a resposta para inglês. Quando uma frase da fonte já responde diretamente à pergunta, prefira conservá-la como afirmação, mantendo sua língua e seus termos.
 Prefira a menor frase completa da fonte que contém a informação necessária. Não copie parágrafos longos ou passagens sobre outros assuntos. Não una pedaços de trechos diferentes em uma mesma citação.
 Formato: {"status":"answered","claims":[{"text":"resposta","evidence":[{"label":"F1","quote":"passagem literal"}]}]}.
 Não acrescente campos, explicações fora do JSON ou instruções operacionais de execução. Você apenas consulta procedimentos.
@@ -94,7 +95,7 @@ begin
         MessageObject := TJSONObject.Create;
         Messages.AddElement(MessageObject);
         MessageObject.AddPair('role', 'user');
-        MessageObject.AddPair('content', Input.ToJSON);
+        MessageObject.AddPair('content', Input.ToJSON([TJSONAncestor.TJSONOutputOption.EncodeBelow32]));
       finally Input.Free; end;
       Body := TStringStream.Create(Request.ToJSON, TEncoding.UTF8);
       try
