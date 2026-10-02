@@ -1,0 +1,15 @@
+{
+  "runtime": "Ollama",
+  "validatedRuntimeVersion": "0.30.5",
+  "model": "embeddinggemma:300m",
+  "digest": "85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1",
+  "dimension": 768,
+  "queryPrefix": "task: search result | query: ",
+  "documentPrefix": "title: none | text: ",
+  "prefixVersion": "retrieval-prefix-v1",
+  "quantization": "BF16",
+  "license": "Gemma Terms of Use",
+  "modelBytes": 621875917,
+  "endpoint": "http://127.0.0.1:11434",
+  "truncate": false
+}

@@ -66,3 +66,19 @@ bin/LexicalDemo.exe data/corpus
 ```
 
 São 15 verificações e quatro consultas no corpus próprio. A consulta operacional por ajuste e estoque pode recuperar devoluções sem fornecer a regra solicitada; encontrar candidatos não basta para responder. Parâmetros e limites estão descritos no capítulo. A função lexical inicial continua disponível em `Rag.Core` para comparação.
+
+## Vetores e embeddings do capítulo 9
+
+`Rag.Vectors.pas` contém matemática e busca exata locais. `Rag.Embeddings.pas` usa HTTP e JSON nativos Delphi com a interface `IEmbeddingProvider`. O adaptador desta prova chama apenas `http://127.0.0.1:11434`.
+
+Os 20 testes matemáticos usam vetores sintéticos identificados. A demonstração usa embeddings reais: Ollama 0.30.5, `embeddinggemma:300m`, 768 dimensões, digest e prefixos em `embeddings.lock.json`. O modelo exige download e recursos locais; confira termos e requisitos em `DEPENDENCIES.md`. Não atualize a tag durante a operação. Digest diferente exige revalidação e reprocessamento da base.
+
+```powershell
+dcc32 -B -Usrc -N0bin -Ebin tests/VectorTests.dpr
+bin/VectorTests.exe
+ollama pull embeddinggemma:300m
+dcc32 -B -Usrc -N0bin -Ebin tests/EmbeddingDemo.dpr
+bin/EmbeddingDemo.exe data/corpus
+```
+
+O runtime deve estar ativo; execute `ollama serve` em outro terminal somente se não houver serviço ativo. A pasta `bin` precisa existir. A demonstração retorna candidatos até para uma pergunta sem resposta na base: similaridade não garante suficiência da evidência. Os exemplos não exigem Python nem SDK de fornecedor.

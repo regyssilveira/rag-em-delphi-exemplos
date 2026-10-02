@@ -13,3 +13,15 @@ O pacote inclui LICENSE da distribuição e `licenses/` com avisos das dependên
 ## Dependências nativas
 
 TXT, Markdown e DOCX utilizam recursos Delphi e Windows (incluindo MSXML 6); não exigem Word. Os documentos e fixtures são distribuídos prontos. Python e ReportLab foram usados apenas na produção editorial de fixtures, sem dependência de execução para o leitor.
+
+## Runtime e modelo de embeddings
+
+O código de integração usa somente Delphi, HTTP e JSON nativos. A biblioteca padrão não inclui pesos treinados para representar semanticamente o corpus. O runtime Ollama executa o modelo externo; o contrato permite substituir o adaptador mediante configuração e validação próprias. Esta opção foi usada para acesso local sem chave de API, sem promoção de fornecedor.
+
+- Runtime observado: Ollama 0.30.5. Licença MIT do projeto: https://github.com/ollama/ollama/blob/main/LICENSE.
+- Modelo observado: `embeddinggemma:300m`, BF16, 768 componentes. Artefatos aproximadamente 622 MB; não é estimativa de memória total de execução. Configuração, digest e prefixos em `embeddings.lock.json`.
+- Termos próprios dos pesos: Gemma Terms of Use, https://ai.google.dev/gemma/terms. A licença Apache 2.0 dos exemplos não substitui esses termos. A prova não redistribui pesos.
+- Cartão do modelo: https://ai.google.dev/gemma/docs/embeddinggemma/model_card. API: https://docs.ollama.com/api/embed.
+- Download inicial exige rede; a inferência da prova usa endpoint local. Tempo e recursos dependem da máquina. Não há promessa de suporte universal, gratuidade de outros serviços, precisão geral ou adequação automática à indústria.
+
+O adaptador confere o digest na construção e usa truncamento desativado. Não existe bloqueio transacional contra alterações de tag por outro processo; evite atualizar o modelo durante preparação/consulta. Para outro modelo, não reutilize os vetores só porque a dimensão coincide.
