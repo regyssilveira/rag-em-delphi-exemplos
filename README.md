@@ -4,7 +4,7 @@ Material próprio do livro de Régys Borges da Silveira. Delphi 13 é a versão 
 
 ## Etapa atual
 
-Fundação em Object Pascal: leitura UTF-8 estrita, extração limitada de DOCX, divisão com sobreposição, busca lexical simples e filtragem demonstrativa por perfil. Ainda não é o assistente completo: VCL, persistência, PDF, OCR, embeddings e geração estão em desenvolvimento. A pontuação atual é uma referência didática por proporção de termos, não BM25 nem busca semântica. Encontrar termos não prova que a pergunta tem resposta.
+Fundação em Object Pascal: leitura UTF-8 estrita, extração limitada de DOCX e PDF por página, divisão com sobreposição, busca lexical simples e filtragem demonstrativa por perfil. Ainda não é o assistente completo: VCL, persistência, OCR, embeddings e geração estão em desenvolvimento. A pontuação atual é uma referência didática por proporção de termos, não BM25 nem busca semântica. Encontrar termos não prova que a pergunta tem resposta.
 
 ## Documentos e avaliação
 
@@ -38,4 +38,18 @@ dcc32 -B -U"src" -N0"bin" -E"bin" tests/IngestionTests.dpr
 .\bin\IngestionTests.exe .\tests\fixtures
 ```
 
-Os fixtures próprios estão prontos para uso; não exigem Python. As 14 verificações comparam texto, acentos, espaços, células e normalização e exercitam rejeições explícitas. Os programas de fundação e ingestão foram compilados e executados com sucesso no Delphi 13 Win32. A geração de respostas, PDF/OCR e aplicação VCL continuam pendentes.
+Os fixtures próprios estão prontos para uso; não exigem Python. As 14 verificações comparam texto, acentos, espaços, células e normalização e exercitam rejeições explícitas. Os programas de fundação e ingestão foram compilados e executados com sucesso no Delphi 13 Win32. A geração de respostas, OCR e aplicação VCL continuam pendentes.
+
+
+## Extração de PDF
+
+O leitor `Rag.Pdf.pas` preserva cada página e sua origem. PDFium é a única dependência externa deste incremento; a justificativa, procedência, hashes e licenças estão em `DEPENDENCIES.md` e `pdfium.lock.json`.
+
+```powershell
+.\scripts\setup-pdfium.ps1
+dcc32 -B -U"src" -N0"bin" -E"bin" tests/PdfTests.dpr
+$pdfiumDll = (Resolve-Path .\bin\pdfium\bin\pdfium.dll).Path
+.\bin\PdfTests.exe $pdfiumDll .\tests\fixtures\pdf
+```
+
+As 21 verificações incluem páginas, acentos, negação, origem nos trechos, imagem sem camada textual, página branca, caminho Unicode e erros de DLL e PDF. O programa foi compilado e executado no Delphi 13 Win32. O leitor rejeita senha, limites excedidos e caracteres sem mapeamento Unicode ao converter páginas em documentos. Sem texto extraído não significa necessariamente página escaneada. Extração não reconstrói tabelas/colunas nem garante ordem visual. OCR será uma etapa específica.

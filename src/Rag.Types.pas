@@ -8,6 +8,7 @@ type
     Source: string;
     Text: string;
     Access: string;
+    PageNumber: Integer;
   end;
 
   TChunk = record
@@ -16,6 +17,7 @@ type
     Source: string;
     Text: string;
     Access: string;
+    PageNumber: Integer;
     StartOffset: Integer;
   end;
 

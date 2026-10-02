@@ -1,0 +1,11 @@
+{
+  "project": "PDFium",
+  "distributor": "bblanchon/pdfium-binaries",
+  "release": "chromium/8076",
+  "target": "win-x86",
+  "callingConvention": "cdecl",
+  "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/8076/pdfium-win-x86.tgz",
+  "archiveSha256": "6e7f30b1b69aed4f210c732519d3165fb731a9a28e5fcfcdbcf9ac580b78bf80",
+  "dllSha256": "1666da25c82d4a0bc76627dc064bdf7081e1a7c2d898329d642e4b0529302e03",
+  "requirement": "Somente o leitor PDF precisa desta DLL; preservar LICENSE e licenses/ ao redistribuir o pacote."
+}

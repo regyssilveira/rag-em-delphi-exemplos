@@ -30,6 +30,7 @@ begin
   else
     raise EReadError.Create('Formato ainda não suportado: ' + TPath.GetExtension(FileName));
   Result.Access := Access;
+  Result.PageNumber := 0;
 end;
 
 function SplitDocument(const Document: TDocument;
@@ -66,6 +67,7 @@ begin
       Chunk.DocumentId := Document.Id;
       Chunk.Source := Document.Source;
       Chunk.Access := Document.Access;
+      Chunk.PageNumber := Document.PageNumber;
       Chunk.StartOffset := StartPosition;
       Chunk.Text := Copy(Document.Text, StartPosition,
         LastPosition - StartPosition + 1);

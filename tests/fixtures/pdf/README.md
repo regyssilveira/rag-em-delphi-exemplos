@@ -1,0 +1,1 @@
+Fixtures próprios: digital.pdf tem duas páginas textuais com acentos; mixed.pdf tem uma página textual, uma página com imagem de texto e uma página branca; encrypted.pdf exige senha de teste e deve ser rejeitado pelo leitor sem senha. O texto é fictício. Os arquivos são distribuídos prontos, sem exigir Python para execução dos testes Delphi.
