@@ -231,3 +231,9 @@ Na configuração publicada de geração v11, `ExtendedAnswers` terminou com sei
 `SecurityBoundaryTests` passou cinco verificações, demonstrando também que o arquivo não é criptografado nem autenticado. Quem já pode alterar a base consegue reclassificar coerentemente seus documentos. O teste não altera permissões do Windows. `GenerationSecurityProbe` terminou com dois casos aprovados e dois reprovados: diante de ordens conflitantes, o modelo se absteve apesar de ter a regra válida. Esses programas não demonstram segurança geral.
 
 `LocalBenchmark` replica os mesmos trechos e vetores em três tamanhos e mede construção e vinte buscas por método. Usa um vetor de documento como consulta, sem calcular embedding de pergunta, chamar geração ou medir qualidade. As médias registradas não são latência completa nem requisito mínimo de hardware. A base original permanece intacta. OCR e revisão visual da interface continuam pendentes.
+
+## Renderização de página PDF
+
+Rag.Pdf também fornece RenderPdfPage: pixels BGRx com a primeira linha no topo, número de página e dimensões. Compartilha a trava PDFium com a extração. Aceita 72 a 300 dpi, no máximo 10.000 pixels por dimensão e vinte milhões de pixels. Não executa OCR nem muda a importação integrada.
+
+Compile tests/PdfRenderTests.dpr com src e execute com três argumentos: tests/fixtures/pdf/mixed.pdf, caminho absoluto da DLL fixada e um destino BMP gravável. Seis conferências passaram: imagem consistente, página branca e rejeição de página zero, resolução fora do limite, página inexistente e arquivo protegido sem senha. Os dois arquivos BMP de saída são substituídos. As 21 verificações anteriores de extração continuam aprovadas.
