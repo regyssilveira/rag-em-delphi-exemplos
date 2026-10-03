@@ -987,78 +987,98 @@ end;
 
 procedure TAssistantForm.RunFlowCheck(const BasePath
   , ReportPath: string);
-var Report: TJSONObject; Checks: TJSONArray; Started
-  : UInt64; CanClose: Boolean;
+var Report: TJSONObject; Checks, Responses:
+  TJSONArray; Started  : UInt64; CanClose: Boolean;
   OriginalWorker: TQueryWorker; Source:
-    TContextSource;
-  ImportInput, ImportBase, BeforeImport: string;
+    TContextSource;  ImportInput, ImportBase,
+      BeforeImport: string;
     ImportedBase: TPreparedBase;
-
   procedure Check(Value: Boolean; const Name: string
     );
+  begin    if not Value then raise Exception.Create(
+      'Falhou: ' + Name);    Checks.Add(Name);
+    TFile.WriteAllText(ReportPath, Report.ToJSON,
+      TEncoding.UTF8);
+  end;
+  procedure RecordResponse(const Operation: string);
+  var Snapshot: TJSONObject;
   begin
-    if not Value then raise Exception.Create(
-      'Falhou: ' + Name);
-    Checks.Add(Name);
+    Snapshot := TJSONObject.Create;
+    Snapshot.AddPair('operation', Operation);
+    if Operation.StartsWith('query-') then
+      Snapshot.AddPair('question',
+        FQuestion.Lines.Text)
+    else
+    begin
+      Snapshot.AddPair('question', '');
+      Snapshot.AddPair('classification',
+        FImportAccess.Text);
+    end;
+    Snapshot.AddPair('profile', FProfile.Text);
+    Snapshot.AddPair('status', FStatus.Caption);
+    Snapshot.AddPair('hasAnswer',
+      TJSONBool.Create(FResponse.Answer.HasAnswer));
+    Snapshot.AddPair('displayedAnswer',
+      FAnswer.Lines.Text);
+    Snapshot.AddPair('context',
+      FResponse.Context.Serialized);
+    Responses.AddElement(Snapshot);
     TFile.WriteAllText(ReportPath, Report.ToJSON,
       TEncoding.UTF8);
   end;
 
-  procedure WaitForQuery;
-  begin
-    Started := GetTickCount64;
-    while FWorker <> nil do
+  procedure WaitForQuery(const Operation: string);
+    begin
+    Started := GetTickCount64;    while FWorker <>
+      nil do
     begin
       Application.ProcessMessages;
-      CheckSynchronize(10);
+        CheckSynchronize(10);
       if GetTickCount64 - Started > 240000 then
-      begin
-        CancelQuery(Self);
-        raise Exception.Create(
-          'Tempo da prova excedido');
-      end;
-    end;
-  end;
-
+        begin
+        CancelQuery(Self);        raise
+          Exception.Create(
+          'Tempo da prova excedido');      end;
+    end; RecordResponse(Operation); end;
 begin
-  Report := TJSONObject.Create;
-  Checks := TJSONArray.Create;
+  Report := TJSONObject.Create;  Checks :=
+    TJSONArray.Create;
   Report.AddPair('checks', Checks);
-  Report.AddPair('passed', TJSONBool.Create(False));
+  Responses := TJSONArray.Create;
+  Report.AddPair('responses', Responses);
+    Report.AddPair('passed', TJSONBool.Create(False)
+    );
   TFile.WriteAllText(ReportPath, Report.ToJSON,
-    TEncoding.UTF8);
-  try
+    TEncoding.UTF8);  try
     FBasePath.Text := BasePath;
-    FProfile.ItemIndex := 0;
+      FProfile.ItemIndex := 0;
     FQuestion.Lines.Text := 'Quem pode liberar um '
       + 'recebimento com ' + 'divergência?';
-    FAsk.Click;
-    Check((FWorker <> nil) and not FAsk.Enabled and
-      not FProfile.Enabled and
-      FCancel.Enabled, 'consulta bloqueia ações ' +
+    FAsk.Click;    Check((FWorker <> nil) and not
+      FAsk.Enabled and
+      not FProfile.Enabled and      FCancel.Enabled,
+        'consulta bloqueia ações ' +
         'incompatíveis e permite ' + 'cancelar');
-    CanClose := True;
-    CheckClose(Self, CanClose);
-    Check(not CanClose, 'fechamento recusado ' +
+          CanClose := True;
+    CheckClose(Self, CanClose);    Check(not
+      CanClose, 'fechamento recusado ' +
       'enquanto worker está ativo');
-    OriginalWorker := FWorker;
-    Ask(Self);
+    OriginalWorker := FWorker;    Ask(Self);
     Check(FWorker = OriginalWorker,
       'segunda consulta não cria ' + 'outro worker')
-      ;
-    WaitForQuery;
+      ;    WaitForQuery('query-supported');
     Check(FAsk.Enabled and not FCancel.Enabled and
       FResponse.Answer.HasAnswer and
       FAnswer.Lines.Text.ToLower.Contains(
         'supervisor') and
       FAnswer.Lines.Text.Contains('Citação:'),
         'resposta real apresentada ' + 'com citação'
-        );
-    Check(FSources.Count > 0, 'contexto consultado '
+        );    Check(FSources.Count > 0,
+          'contexto consultado '
       + 'disponível para ' + 'conferência');
-    FSources.ItemIndex := 0;
-    SelectSource(Self);
-    Check(FSource.Lines.Text.Contains(
+        FSources.ItemIndex := 0;
+    SelectSource(Self);    Check(
+      FSource.Lines.Text.Contains(
       FResponse.Context.Sources[0].Chunk.Text),
       'seleção mostra passagem ' +
         'resolvida localmente');
@@ -1066,42 +1086,43 @@ begin
       FAnswer.Lines.Text);
     FQuestion.Lines.Text :=
       'Quem aprova o ajuste de ' + 'estoque?';
-    FAsk.Click;
-    WaitForQuery;
+    FAsk.Click;    WaitForQuery('query-restricted');
     Check(not FResponse.Answer.HasAnswer and
       FAnswer.Lines.Text.Contains(
       'Não encontrei evidência'),
-      'perfil operacional recebe ' +
+        'perfil operacional recebe ' +
         'abstenção para regra ' + 'restrita');
-    for Source in FResponse.Context.Sources do
+          for Source in FResponse.Context.Sources do
       Check(Source.Chunk.Access = 'operacional',
         'fonte do contexto ' + 'respeita perfil ' +
         'operacional');
-    FProfile.ItemIndex := 1;
-    ProfileChanged(Self);
+    FProfile.ItemIndex := 1;    ProfileChanged(Self)
+      ;
     Check((FSources.Count = 0) and (
       FAnswer.Lines.Count = 0) and
       (Length(FResponse.Context.Sources) = 0),
         'mudança de perfil limpa ' +
         'apresentação e contexto ' + 'anterior');
-    FAsk.Click;
-    WaitForQuery;
-    Check(FResponse.Answer.HasAnswer and
+          FAsk.Click;
+    WaitForQuery('query-supervisor');    Check(
+      FResponse.Answer.HasAnswer and
       FAnswer.Lines.Text.ToLower.Contains(
-      'supervisor'),
-      'perfil supervisor consulta regra de ajuste');
-    FProfile.ItemIndex := 0;
+        'supervisor'),
+      'perfil supervisor ' +
+        'consulta regra de ajuste');
+        FProfile.ItemIndex := 0;
     ProfileChanged(Self);
     Check((FSources.Count = 0) and
       FSource.Lines.Text.IsEmpty and
       FAnswer.Lines.Text.IsEmpty,
       'volta ao operacional ' +
         'remove conteúdo restrito ' + 'da janela');
-    FQuestion.Lines.Text := 'Quem pode liberar um '
+          FQuestion.Lines.Text :=
+          'Quem pode liberar um '
       + 'recebimento com ' + 'divergência?';
-    FAsk.Click;
-    CancelQuery(Self);
-    WaitForQuery;
+        FAsk.Click;
+    CancelQuery(Self);    WaitForQuery(
+      'query-cancelled');
     Check((FSources.Count = 0) and
       FAnswer.Lines.Text.IsEmpty and
       string(FStatus.Caption).Contains('cancelada')
@@ -1116,60 +1137,59 @@ begin
     TFile.WriteAllText(ImportInput,
       'O supervisor aprova a ' +
       'contagem de estoque.', TEncoding.UTF8);
-    FBasePath.Text := ImportBase;
-    FImportAccess.ItemIndex := 0;
-    StartImport([ImportInput]);
+        FBasePath.Text := ImportBase;
+    FImportAccess.ItemIndex := 0;    StartImport([
+      ImportInput]);
     Check(not FImport.Enabled and not FAsk.Enabled,
       'importação bloqueia ' +
-      'operações concorrentes');
-    WaitForQuery;
+      'operações concorrentes');    WaitForQuery(
+        'import-new');
     Check(TFile.Exists(ImportBase) and string(
       FStatus.Caption).Contains('Base gravada'),
       'importação VCL grava base ' +
-      'com embeddings reais');
+        'com embeddings reais');
     ImportedBase := LoadPreparedBase(ImportBase,
       'embeddinggemma:300m@854626' +
         '19ee721b466c5927d109d4cb76' +
         '5861907d5417b9109caebc4e61' +
-        '4679f1|retrieval-prefix-v1' + '|dim=768');
+          '4679f1|retrieval-prefix-v1' + '|dim=768')
+          ;
     Check((Length(ImportedBase.Documents) = 1) and (
       Length(ImportedBase.Items) = 1),
       'base importada reabre com ' +
-      'documento e vetor');
-    FImportAccess.ItemIndex := 1;
-    StartImport([ImportInput]);
-    WaitForQuery;
-    ImportedBase := LoadPreparedBase(ImportBase,
+        'documento e vetor');
+    FImportAccess.ItemIndex := 1;    StartImport([
+      ImportInput]);
+    WaitForQuery('import-reclassify');
+      ImportedBase := LoadPreparedBase(ImportBase,
       'embeddinggemma:300m@854626' +
         '19ee721b466c5927d109d4cb76' +
         '5861907d5417b9109caebc4e61' +
         '4679f1|retrieval-prefix-v1' + '|dim=768');
-    Check((ImportedBase.Documents[0].Access =
+          Check((ImportedBase.Documents[0].Access =
       'supervisor') and string(FStatus.Caption).
       Contains('1 reutilizados'),
       'reimportação VCL atualiza ' +
-      'classificação e reutiliza ' + 'vetor');
+        'classificação e reutiliza ' + 'vetor');
     BeforeImport := TFile.ReadAllText(ImportBase,
       TEncoding.UTF8);
     StartImport([ImportInput + '.ausente']);
-    WaitForQuery;
+      WaitForQuery('import-missing');
     Check((TFile.ReadAllText(ImportBase,
       TEncoding.UTF8) = BeforeImport) and string(
       FStatus.Caption).Contains('não concluída'),
-      'falha de importação ' +
+        'falha de importação ' +
       'conserva base anterior');
-    Report.RemovePair('passed').Free;
+        Report.RemovePair('passed').Free;
     Report.AddPair('passed', TJSONBool.Create(True))
       ;
     Report.AddPair('scope', 'Consulta e importação '
       + 'real por controles e ' +
-      'handlers VCL em janela ' +
+        'handlers VCL em janela ' +
       'oculta; não aprova ' +
-      'inspeção visual, OCR ou ' +
-      'remoção pela janela.');
-    TFile.WriteAllText(ReportPath, Report.ToJSON,
-      TEncoding.UTF8);
-  finally Report.Free; end;
+        'inspeção visual, OCR ou ' +
+      'remoção pela janela.');    TFile.WriteAllText
+        (ReportPath, Report.ToJSON,
+      TEncoding.UTF8);  finally Report.Free; end;
 end;
-
 end.

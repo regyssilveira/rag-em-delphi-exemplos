@@ -252,6 +252,8 @@ bin/RagAssistant.exe
 
 Esta etapa abre uma base já preparada, como `bin/integrated-base.json`, criada pelo exemplo de avaliação. O percurso pela janela foi executado com modelos reais em modo de teste oculto: recebimento com fonte, abstenção operacional sobre ajuste, consulta como supervisor, conferência da passagem, limpeza ao mudar perfil e cancelamento imediato. Não equivale a inspeção visual nem interação humana. O perfil é didático e não autentica um usuário do ERP.
 
+O modo `--flow-check` conserva no relatório a coleção `responses`, com identificador de operação, status, resposta exibida e contexto completo. Consultas registram pergunta e perfil; importações deixam a pergunta vazia e registram a classificação escolhida. Os estados de cancelamento e falha continuam distinguíveis. Use esse relatório com o corpus fictício para comparar cada afirmação com as passagens disponíveis; ele contém texto dos documentos e não é um log automático da aplicação em uso normal. O registro não equivale ao envelope bruto do modelo nem aprova suporte semântico.
+
 A janela também importa e atualiza documentos, prepara embeddings e grava a base local em segundo plano. `Rag.Import` já compõe leitura, reimportação e remoção de fontes, sem gravar a base. Quatorze verificações cobrem DOCX, PDF digital, classificação, nomes repetidos, remoção de todas as páginas e rejeição explícita de páginas sem texto. Requer o PDFium fixado para os casos PDF. O botão comum recusa páginas sem texto; o percurso OCR experimental usa outro botão e revisão explícita.
 
 ```powershell
