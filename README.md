@@ -243,3 +243,15 @@ Compile tests/PdfRenderTests.dpr com src e execute com três argumentos: tests/f
 A gravação agora usa formatVersion 2 e conserva estado de revisão, identidade do reconhecimento e texto reconhecido original, além do texto revisado. O leitor aceita também bases v1 sem inventar histórico OCR. Leitores antigos recusam a versão nova. Preservar o texto original pode conservar informação removida na revisão; proteja a base conforme todo o seu conteúdo.
 
 O código próprio de experimental/ocr ainda não está ligado à janela principal. Seus quinze testes de serviço e dezesseis de proveniência foram executados; a distribuição do reconhecedor externo continua em investigação. Nenhum runtime ou dado linguístico está incluído. Consulte experimental/ocr/README.md para os requisitos e limitações. As 19 verificações anteriores de persistência, 14 de importação e 10 de edição continuam passando.
+
+## Importação de PDF com revisão OCR
+
+A janela possui um percurso experimental específico para reconhecer e revisar páginas antes de gravar. Configure o reconhecedor e os hashes esperados antes de iniciar a aplicação, seguindo experimental/ocr/README.md. A distribuição do runtime continua em investigação e não acompanha o repositório. A prova dos workers usa OCR e embeddings reais com decisões automatizadas; não aprova interação humana ou layout.
+
+Compile a aplicação com src e experimental/ocr no caminho de pesquisa:
+
+```powershell
+dcc32 -B -U"src;experimental/ocr" -N0bin -Ebin app/RagAssistant.dpr
+```
+
+Selecione a classificação e o destino da base; use Importar PDF com revisão OCR. Confira cada prévia e corrija o texto antes de aceitar. Cancelar a revisão preserva a base anterior. Ignorar está disponível somente para reconhecimento vazio, que precisa ser comparado à imagem. A importação comum mantém seus controles e continua recusando páginas que precisam desse percurso.
