@@ -39,6 +39,9 @@ var Base: TPreparedBase; Provider: IEmbeddingProvider; Chunks: TArray<TChunk>;
 begin
 try
   if ParamCount <> 3 then raise Exception.Create('Informe base, perguntas e relatório');
+  if SameFileName(TPath.GetFullPath(ParamStr(1)), TPath.GetFullPath(ParamStr(3))) or
+    SameFileName(TPath.GetFullPath(ParamStr(2)), TPath.GetFullPath(ParamStr(3))) then
+    raise Exception.Create('Relatório não pode substituir a base ou as perguntas');
   Provider := TOllamaEmbeddingProvider.Create('embeddinggemma:300m',
     '85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1', 768);
   Base := LoadPreparedBase(ParamStr(1), Provider.ModelIdentity);
