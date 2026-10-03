@@ -196,7 +196,7 @@ JSON preserva separação e texto, mas não impede que um modelo siga instruçõ
 
 ## Geração e avaliação exploratória
 
-`Rag.Answers` exige afirmações com citações literais e resolve os rótulos usando o contexto local. Doze testes do contrato foram executados no Delphi 13. Uma citação existente não comprova que a afirmação decorre dela: a avaliação semântica continua necessária.
+`Rag.Answers` exige afirmações com citações literais e resolve os rótulos usando o contexto local. Doze testes do contrato foram executados no Delphi 13. Uma citação existente não comprova que a afirmação decorre dela: a avaliação semântica continua necessária. A validação também rejeita citações que cortam uma palavra no início ou no fim. Usa classificação Unicode nativa para letras, números e marcas combinantes; procura outra ocorrência válida quando a primeira está cortada. Isso não exige uma frase completa nem verifica condições ou finalidade da afirmação.
 
 `Rag.Generation` implementa `IAnswerProvider` com HTTP/JSON nativos e o modelo instrucional `qwen2.5:7b`. Configuração, digest e licença estão em `generation.lock.json`. Requer download adicional de aproximadamente 4,68 GB de artefatos e recursos de execução; não é garantia de requisitos mínimos de memória. Pesos não estão neste repositório. Não altere tags durante execução. A configuração passou dois casos controlados e oito perguntas didáticas; qualidade geral ainda exige avaliação própria.
 
@@ -421,3 +421,15 @@ Confira responsável pela qualidade e a condição de conferir o registro da ins
 A prova delimitada de 3 de outubro de 2026 confirmou igualdade do documento impresso com o arquivo, divisão 380/60 e presença das duas passagens entre os três candidatos da busca lexical simples, além de ausência de regra de temperatura. Não executou embeddings, ranking híbrido, geração ou atividade humana pela VCL. Resultados esperados são critérios de conferência, não promessa de resposta correta. O assistente informa procedimentos e não libera lotes no ERP.
 
 Rodada adicional em console concluída em 3 de outubro de 2026: quatro documentos, dez trechos em 380/60, adaptador publicado, duas aprovações e uma falha automática. Na liberação do lote, os três métodos colocaram primeiro um trecho começando dentro de Somente; a expressão completa esperada ficou em segundo lugar nos cortes 3/6. A resposta citou literalmente o fragmento começando em nte o responsável e trocou conferir o registro por após a inspeção. Parser literal aceitou a passagem presente; avaliador recusou a referência incompleta. Registro conservou os quatro dados, e temperatura produziu insuficiência. A rodada não verifica VCL ou revisão humana; preserve a falha ao comparar outra divisão, sem retirar palavras da referência ou corrigir a resposta bruta.
+
+## Regressão de limites das citações
+
+O programa adicional usa somente Delphi e fontes fictícias controladas, sem chamar modelos. Confere seis casos: início/fim de palavra cortados, passagem com palavras completas, ocorrência posterior válida e acento combinante cortado/conservado. Os 12 testes originais do contrato são preservados.
+
+```powershell
+dcc32 -B -Usrc -N0bin -Ebin tests/QuoteBoundaryTests.dpr
+if ($LASTEXITCODE -ne 0) { throw 'Compilação falhou.' }
+bin/QuoteBoundaryTests.exe
+```
+
+Espere seis mensagens `OK:` e `PASSED=6`. A checagem é conservadora em unidades UTF-16 e não constitui um segmentador linguístico universal. As oito perguntas integradas também passaram com a correção, mas as falhas ampliadas permanecem pendentes.

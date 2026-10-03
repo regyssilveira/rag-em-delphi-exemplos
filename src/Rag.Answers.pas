@@ -24,8 +24,46 @@ TValidatedAnswer ;
 
 implementation
 
-uses System . JSON , System . Generics . Collections
-;
+uses System.Character, System.JSON,
+  System.Generics.Collections;
+
+function IsWordPart(const Value: Char): Boolean;
+begin
+  Result := Value.IsLetterOrDigit or
+    (Value.GetUnicodeCategory in
+    [TUnicodeCategory.ucCombiningMark,
+     TUnicodeCategory.ucEnclosingMark,
+     TUnicodeCategory.ucNonSpacingMark,
+     TUnicodeCategory.ucConnectPunctuation,
+     TUnicodeCategory.ucSurrogate]);
+end;
+
+function ContainsWholeQuote(const Text,
+  Quote: string): Boolean;
+var Position, EndPosition: Integer;
+  StartsInsideWord, EndsInsideWord: Boolean;
+begin
+  Result := False;
+  if Quote.IsEmpty then Exit;
+  Position := Text.IndexOf(Quote);
+  while Position >= 0 do
+  begin
+    EndPosition := Position + Length(Quote);
+    StartsInsideWord := False;
+    EndsInsideWord := False;
+    if Position > 0 then
+      StartsInsideWord := IsWordPart(Quote[1]) and
+        IsWordPart(Text[Position]);
+    if EndPosition < Length(Text) then
+      EndsInsideWord := IsWordPart(Quote[Length(
+        Quote)])
+        and IsWordPart(Text[EndPosition + 1]);
+    if not StartsInsideWord and not EndsInsideWord
+      then
+      Exit(True);
+    Position := Text.IndexOf(Quote, Position + 1);
+  end;
+end;
 
 procedure RequireFields ( const Obj : TJSONObject ;
 const Names : array of string ) ;
@@ -169,8 +207,9 @@ begin
             raise EArgumentException . Create (
             'Citação curta ou fonte ' + 'ausente' )
             ;
-          if Source . Chunk . Text . IndexOf ( Quote
-          ) < 0 then raise EArgumentException .
+          if not ContainsWholeQuote(
+            Source.Chunk.Text,
+          Quote) then raise EArgumentException .
           Create ( 'Citação não pertence ao ' +
           'trecho' ) ;
           if Seen . ContainsKey ( LabelId ) then
