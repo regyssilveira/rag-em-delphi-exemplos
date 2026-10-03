@@ -18,10 +18,22 @@ begin
   finally Stream.Free; end;
 end;
 
+procedure CheckOutputPaths(const PdfPath, DllPath, OutputPath: string);
+var Destination, ProtectedPath: string;
+begin
+  for Destination in TArray<string>.Create(OutputPath, OutputPath + '-blank.bmp') do
+    for ProtectedPath in TArray<string>.Create(PdfPath, DllPath,
+      TPath.Combine(TPath.GetDirectoryName(PdfPath), 'encrypted.pdf')) do
+      if SameFileName(TPath.GetFullPath(Destination),
+        TPath.GetFullPath(ProtectedPath)) then
+        raise EArgumentException.Create('Saída não pode substituir entrada');
+end;
+
 var Page: TRenderedPdfPage; Rejected: Boolean; I: Integer;
 begin
   try
     if ParamCount <> 3 then raise Exception.Create('Informe PDF, DLL e saída BMP');
+    CheckOutputPaths(ParamStr(1), ParamStr(2), ParamStr(3));
     Page := RenderPdfPage(ParamStr(1), ParamStr(2), 2, 200);
     if (Page.PageNumber <> 2) or (Page.Width <= 0) or (Page.Height <= 0)
       or (Length(Page.Pixels) <> Page.Stride * Page.Height) then
