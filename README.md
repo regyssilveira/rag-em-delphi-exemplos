@@ -17,6 +17,24 @@ Comece pela fundação e avance conforme os capítulos. Os recursos adicionais s
 
 Não é necessário Python para executar o percurso do leitor. Os documentos próprios e os programas de verificação estão neste repositório. O livro apresenta os conceitos e fontes essenciais para acompanhamento independente.
 
+## Construir a aplicação em um comando
+
+Na raiz dos exemplos, abra um terminal com o Delphi 13 configurado e execute:
+
+```powershell
+.\scripts\build.ps1 -RunFoundation
+```
+
+O script compila a aplicação VCL Win32 e executa as 19 verificações da fundação com os documentos fornecidos. Interrompe em caso de falha e não inicia a janela, instala dependências ou chama modelos. O executável fica em `bin/RagAssistant.exe`. A preparação dos modelos e dos formatos adicionais segue as seções abaixo; compilar não comprova qualidade das respostas nem funcionamento de OCR.
+
+Se `dcc32.exe` não estiver no PATH, informe sua instalação, por exemplo:
+
+```powershell
+.\scripts\build.ps1 -CompilerPath 'C:\Program Files (x86)\Embarcadero\Studio\37.0\bin\dcc32.exe' -RunFoundation
+```
+
+Ajuste esse caminho para sua instalação do Delphi 13. O script resolve os arquivos em relação ao próprio repositório e também pode ser chamado de outra pasta pelo caminho completo.
+
 ## Documentos e avaliação
 
 `data/corpus` contém procedimentos fictícios do Comércio Aurora. Não são regras legais ou fiscais. `data/evaluation/questions.json` registra perguntas, fontes e evidências esperadas; uma fonte nula significa que a base permitida não sustenta resposta. `data/updates/devolucoes-v2.md` altera o prazo interno para exercitar atualização, sem entrar na base inicial.
