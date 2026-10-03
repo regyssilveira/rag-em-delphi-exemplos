@@ -115,6 +115,17 @@ bin/EmbeddingDemo.exe data/corpus
 
 O runtime deve estar ativo; execute `ollama serve` em outro terminal somente se não houver serviço ativo. A pasta `bin` precisa existir. A demonstração retorna candidatos até para uma pergunta sem resposta na base: similaridade não garante suficiência da evidência. Os exemplos não exigem Python nem SDK de fornecedor.
 
+## Conferir os modelos antes de consultar
+
+Depois dos downloads das etapas 9 e 11, execute na raiz dos exemplos:
+
+```powershell
+.\scripts\check-models.ps1
+if ($LASTEXITCODE -ne 0) { throw 'Corrija a configuração antes de consultar.' }
+```
+
+O diagnóstico consulta somente o serviço local e compara os nomes e digests dos modelos com `embeddings.lock.json` e `generation.lock.json`. São esperadas duas mensagens `OK:`. Não instala, atualiza ou gera respostas. Se o serviço estiver indisponível, um modelo faltar ou a identidade divergir, termina com código 1; conserve o diagnóstico e siga a configuração do livro. Não altere um digest para contornar a divergência. A aprovação não verifica a versão do runtime, memória disponível, qualidade ou uma máquina limpa. A listagem usa o endpoint documentado em https://docs.ollama.com/api/tags.
+
 ## Persistência e busca híbrida do capítulo 10
 
 `Rag.Persistence` salva documentos, trechos, vetores e contrato em arquivos JSON locais. `Rag.Hybrid` combina posições das buscas lexical e vetorial, com filtros de acesso e detecção de versões conflitantes. Não exige biblioteca adicional.
