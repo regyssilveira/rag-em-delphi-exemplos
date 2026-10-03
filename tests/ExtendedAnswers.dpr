@@ -2,15 +2,19 @@
 
 {$APPTYPE CONSOLE}
 
-uses System.SysUtils, System.IOUtils, System.JSON, Rag.Types, Rag.Core,
-  Rag.Vectors, Rag.Embeddings, Rag.Persistence, Rag.Lexical, Rag.Hybrid,
+uses System.SysUtils, System.IOUtils, System.JSON,
+  Rag.Types, Rag.Core,
+  Rag.Vectors, Rag.Embeddings, Rag.Persistence,
+    Rag.Lexical, Rag.Hybrid,
   Rag.Context, Rag.Answers, Rag.Generation;
 
 const
   EmbeddingModel = 'embeddinggemma:300m';
-  EmbeddingDigest = '85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1';
+  EmbeddingDigest = '85462619ee721b466c5927d109' +
+    'd4cb765861907d5417b9109cae' + 'bc4e614679f1';
 
 var
+
   Embeddings: IEmbeddingProvider;
   Generator: IAnswerProvider;
   Documents: TArray<TDocument>;
@@ -26,106 +30,203 @@ var
   QuestionObject: TJSONValue;
   Claim: TAnswerClaim;
   Evidence: TAnswerEvidence;
-  I, Passed, Failed: Integer; ContextJson: TJSONObject; ContextItems: TJSONArray; ContextSource: TContextSource; ContextItem: TJSONObject;
-  Profile, Question, ExpectedSource, ExpectedEvidence, Id: string;
-  FoundSource, FoundEvidence, FoundClaim, ExpectedAnswer: Boolean;
+  I, Passed, Failed: Integer; ContextJson:
+    TJSONObject; ContextItems: TJSONArray;
+    ContextSource: TContextSource; ContextItem:
+    TJSONObject;
+  Profile, Question, ExpectedSource,
+    ExpectedEvidence, Id: string;
+  FoundSource, FoundEvidence, FoundClaim,
+    ExpectedAnswer: Boolean;
   ExpectedClaimAny, ExpectedClaimPart: TJSONValue;
 begin
+
   try
-    if ParamCount <> 2 then raise Exception.Create('Use data/corpus data/evaluation/questions.json');
-    Embeddings := TOllamaEmbeddingProvider.Create(EmbeddingModel, EmbeddingDigest, 768);
+
+    if ParamCount <> 2 then raise Exception.Create(
+      'Use data/corpus ' +
+      'data/evaluation/questions.' + 'json');
+    Embeddings := TOllamaEmbeddingProvider.Create(
+      EmbeddingModel, EmbeddingDigest, 768);
     Generator := TOllamaAnswerProvider.Create;
     SetLength(Documents, 3);
-    Documents[0] := LoadDocument(TPath.Combine(ParamStr(1), 'recebimento.md'), 'operacional');
-    Documents[1] := LoadDocument(TPath.Combine(ParamStr(1), 'devolucoes.md'), 'operacional');
-    Documents[2] := LoadDocument(TPath.Combine(ParamStr(1), 'estoque.md'), 'supervisor');
-    Base := PrepareBase(Documents, Default(TPreparedBase), Embeddings, 768, 380, 60, Stats);
-    SavePreparedBase(TPath.Combine(ExtractFilePath(ParamStr(0)), 'extended-answers-base.json'), Base);
-    Base := LoadPreparedBase(TPath.Combine(ExtractFilePath(ParamStr(0)), 'extended-answers-base.json'), Embeddings.ModelIdentity);
+    Documents[0] := LoadDocument(TPath.Combine(
+      ParamStr(1), 'recebimento.md'), 'operacional')
+      ;
+    Documents[1] := LoadDocument(TPath.Combine(
+      ParamStr(1), 'devolucoes.md'), 'operacional');
+    Documents[2] := LoadDocument(TPath.Combine(
+      ParamStr(1), 'estoque.md'), 'supervisor');
+    Base := PrepareBase(Documents, Default(
+      TPreparedBase), Embeddings, 768, 380, 60,
+      Stats);
+    SavePreparedBase(TPath.Combine(ExtractFilePath(
+      ParamStr(0)), 'extended-answers-base.json'),
+      Base);
+    Base := LoadPreparedBase(TPath.Combine(
+      ExtractFilePath(ParamStr(0)),
+      'extended-answers-base.json'),
+      Embeddings.ModelIdentity);
     SetLength(Chunks, Length(Base.Items));
-    for I := 0 to High(Chunks) do Chunks[I] := Base.Items[I].Chunk;
+    for I := 0 to High(Chunks) do Chunks[I] :=
+      Base.Items[I].Chunk;
     Lexical := TLexicalIndex.Create(Chunks);
-    Vector := TVectorIndex.Create(Base.Items, Embeddings.ModelIdentity);
+    Vector := TVectorIndex.Create(Base.Items,
+      Embeddings.ModelIdentity);
     try
-      Value := TJSONObject.ParseJSONValue(TFile.ReadAllText(ParamStr(2), TEncoding.UTF8));
+
+      Value := TJSONObject.ParseJSONValue(
+        TFile.ReadAllText(ParamStr(2),
+        TEncoding.UTF8));
       try
-        if not (Value is TJSONArray) then raise Exception.Create('Perguntas inválidas');
+
+        if not (Value is TJSONArray) then raise
+          Exception.Create('Perguntas inválidas');
         Questions := TJSONArray(Value);
         Passed := 0;
         Failed := 0;
         for QuestionObject in Questions do
         begin
-          Id := QuestionObject.FindValue('id').Value;
-          Question := QuestionObject.FindValue('question').Value;
-          Profile := QuestionObject.FindValue('profile').Value;
-          ExpectedAnswer := not (QuestionObject.FindValue('expected_source') is TJSONNull);
-          ExpectedSource := QuestionObject.FindValue('expected_source').Value;
-          ExpectedEvidence := QuestionObject.FindValue('expected_evidence').Value;
-          ExpectedClaimAny := QuestionObject.FindValue('expected_claim_any');
-          if ExpectedAnswer and not (ExpectedClaimAny is TJSONArray) then
-            raise Exception.Create('Critério mínimo da afirmação ausente');
+
+          Id := QuestionObject.FindValue('id').Value
+            ;
+          Question := QuestionObject.FindValue(
+            'question').Value;
+          Profile := QuestionObject.FindValue(
+            'profile').Value;
+          ExpectedAnswer := not (
+            QuestionObject.FindValue(
+            'expected_source') is TJSONNull);
+          ExpectedSource := QuestionObject.FindValue
+            ('expected_source').Value;
+          ExpectedEvidence :=
+            QuestionObject.FindValue(
+            'expected_evidence').Value;
+          ExpectedClaimAny :=
+            QuestionObject.FindValue(
+            'expected_claim_any');
+          if ExpectedAnswer and not (
+            ExpectedClaimAny is TJSONArray) then
+            raise Exception.Create(
+            'Critério mínimo da ' +
+            'afirmação ausente');
           try
-            Context := BuildContext(FuseRankings(Lexical.Search(Question, Profile, 6),
-              Vector.Search(Embeddings.EmbedQuery(Question), Embeddings.ModelIdentity, Profile, 6),
+
+            Context := BuildContext(FuseRankings(
+            Lexical.Search(Question, Profile, 6),
+              Vector.Search(Embeddings.EmbedQuery(
+            Question), Embeddings.ModelIdentity,
+            Profile, 6),
               Profile, 6), Profile, 6000, 6);
             ContextJson := TJSONObject.Create;
             try
+
               ContextItems := TJSONArray.Create;
-              ContextJson.AddPair('sources', ContextItems);
-              for ContextSource in Context.Sources do
+              ContextJson.AddPair('sources',
+            ContextItems);
+              for ContextSource in Context.Sources
+            do
               begin
+
                 ContextItem := TJSONObject.Create;
-                ContextItem.AddPair('label', ContextSource.LabelId);
-                ContextItem.AddPair('documentId', ContextSource.Chunk.DocumentId);
-                ContextItem.AddPair('access', ContextSource.Chunk.Access);
-                ContextItem.AddPair('text', ContextSource.Chunk.Text);
-                ContextItems.AddElement(ContextItem);
-                if (Profile = 'operacional') and (ContextSource.Chunk.Access <> 'operacional') then
-                  raise Exception.Create('Contexto restrito antes da geração');
+                ContextItem.AddPair('label',
+            ContextSource.LabelId);
+                ContextItem.AddPair('documentId',
+            ContextSource.Chunk.DocumentId);
+                ContextItem.AddPair('access',
+            ContextSource.Chunk.Access);
+                ContextItem.AddPair('text',
+            ContextSource.Chunk.Text);
+                ContextItems.AddElement(ContextItem)
+            ;
+                if (Profile = 'operacional') and (
+            ContextSource.Chunk.Access <>
+            'operacional') then
+                  raise Exception.Create(
+            'Contexto restrito antes ' +
+            'da geração');
               end;
-              TFile.WriteAllText(TPath.Combine(ExtractFilePath(ParamStr(0)),
-                'extended-context-' + Id + '.json'), ContextJson.ToJSON, TEncoding.UTF8);
+              TFile.WriteAllText(TPath.Combine(
+            ExtractFilePath(ParamStr(0)),
+                'extended-context-' + Id + '.json'),
+            ContextJson.ToJSON, TEncoding.UTF8);
             finally ContextJson.Free; end;
-            Answer := Generator.Generate(Question, Context);
-            TFile.WriteAllText(TPath.Combine(ExtractFilePath(ParamStr(0)), 'extended-answer-' + Id + '.json'), Generator.LastResponse, TEncoding.UTF8);
+            Answer := Generator.Generate(Question,
+            Context);
+            TFile.WriteAllText(TPath.Combine(
+            ExtractFilePath(ParamStr(0)),
+            'extended-answer-' + Id + '.json'),
+            Generator.LastResponse, TEncoding.UTF8);
             FoundSource := False;
             FoundEvidence := False;
             FoundClaim := False;
             for Claim in Answer.Claims do
             begin
-              if ((Id = 'E03') or (Id = 'E04')) and Claim.Text.TrimLeft.ToLower.StartsWith('sim') then
-                raise Exception.Create('Resposta afirmativa contradiz a regra de não retorno automático');
+
+              if ((Id = 'E03') or (Id = 'E04')) and
+            Claim.Text.TrimLeft.ToLower.StartsWith(
+            'sim') then
+                raise Exception.Create(
+            'Resposta afirmativa ' +
+            'contradiz a regra de não ' +
+            'retorno automático');
               Writeln(Id, ' CLAIM ', Claim.Text);
               if ExpectedAnswer then
-                for ExpectedClaimPart in TJSONArray(ExpectedClaimAny) do
-                  if Claim.Text.ToLower.Contains(ExpectedClaimPart.Value.ToLower) then
+                for ExpectedClaimPart in TJSONArray(
+            ExpectedClaimAny) do
+                  if Claim.Text.ToLower.Contains(
+            ExpectedClaimPart.Value.ToLower) then
                     FoundClaim := True;
               for Evidence in Claim.Evidence do
               begin
-                Writeln(Id, ' SOURCE ', Evidence.Source.Chunk.Id, ' QUOTE ', Evidence.Quote);
-                if Evidence.Source.Chunk.DocumentId = ExpectedSource then FoundSource := True;
-                if (Evidence.Source.Chunk.DocumentId = ExpectedSource) and not ExpectedEvidence.IsEmpty and Evidence.Quote.ToLower.Contains(ExpectedEvidence.ToLower) then FoundEvidence := True;
-                if (Profile = 'operacional') and (Evidence.Source.Chunk.Access <> 'operacional') then
-                  raise Exception.Create('Fonte restrita na resposta');
+
+                Writeln(Id, ' SOURCE ',
+            Evidence.Source.Chunk.Id, ' QUOTE ',
+            Evidence.Quote);
+                if Evidence.Source.Chunk.DocumentId
+            = ExpectedSource then FoundSource :=
+            True;
+                if (Evidence.Source.Chunk.DocumentId
+            = ExpectedSource) and not
+            ExpectedEvidence.IsEmpty and
+            Evidence.Quote.ToLower.Contains(
+            ExpectedEvidence.ToLower) then
+            FoundEvidence := True;
+                if (Profile = 'operacional') and (
+            Evidence.Source.Chunk.Access <>
+            'operacional') then
+                  raise Exception.Create(
+            'Fonte restrita na resposta');
               end;
             end;
-            if (Answer.HasAnswer <> ExpectedAnswer) or
-              (ExpectedAnswer and not (FoundSource and FoundEvidence and FoundClaim)) then
-              raise Exception.Create('Resposta diverge da evidência esperada');
+            if (Answer.HasAnswer <> ExpectedAnswer)
+            or
+              (ExpectedAnswer and not (FoundSource
+            and FoundEvidence and FoundClaim)) then
+              raise Exception.Create(
+            'Resposta diverge da ' +
+            'evidência esperada');
             Inc(Passed);
             Writeln('OK: ', Id);
           except on E: Exception do
             begin
+
               Inc(Failed);
-              TFile.WriteAllText(TPath.Combine(ExtractFilePath(ParamStr(0)), 'extended-answer-' + Id + '.json'), Generator.LastResponse, TEncoding.UTF8);
-              Writeln('FAIL: ', Id, ' | ', E.Message);
+              TFile.WriteAllText(TPath.Combine(
+            ExtractFilePath(ParamStr(0)),
+            'extended-answer-' + Id + '.json'),
+            Generator.LastResponse, TEncoding.UTF8);
+              Writeln('FAIL: ', Id, ' | ', E.Message
+            );
             end;
           end;
           Flush(Output);
         end;
-        Writeln('PASSED=', Passed, ' FAILED=', Failed);
+        Writeln('PASSED=', Passed, ' FAILED=',
+          Failed);
         if Failed > 0 then ExitCode := 1;
       finally Value.Free; end;
     finally Vector.Free; Lexical.Free; end;
-  except on E: Exception do begin Writeln(E.Message); ExitCode := 1; end; end;
+  except on E: Exception do begin Writeln(E.Message)
+    ; ExitCode := 1; end; end;
 end.
