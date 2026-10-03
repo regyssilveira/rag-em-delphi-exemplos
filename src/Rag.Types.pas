@@ -9,6 +9,9 @@ type
     Text: string;
     Access: string;
     PageNumber: Integer;
+    WasOcrReviewed: Boolean;
+    RecognitionIdentity: string;
+    RecognizedText: string;
   end;
 
   TChunk = record

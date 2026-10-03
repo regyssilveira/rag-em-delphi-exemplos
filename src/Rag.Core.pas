@@ -18,6 +18,7 @@ uses Rag.Ingestion;
 
 function LoadDocument(const FileName, Access: string): TDocument;
 begin
+  Result := Default(TDocument);
   if not TFile.Exists(FileName) then
     raise EFileNotFoundException.Create('Documento não encontrado: ' + FileName);
   Result.Id := TPath.GetFileName(FileName);

@@ -48,6 +48,16 @@ begin
         ((Document.Access <> 'operacional') and (Document.Access <> 'supervisor')) or
         (Document.PageNumber < 0) or Ids.ContainsKey(Document.Id) then
         raise EReadError.Create('Identidade ou metadados de documento inválidos');
+      if Length(Document.RecognizedText) > 1024 * 1024 then
+        raise EReadError.Create('Texto reconhecido fora do limite');
+      if Document.WasOcrReviewed then
+      begin
+        if Document.RecognitionIdentity.Trim.IsEmpty or (Length(Document.RecognitionIdentity) > 512)
+          or Document.Text.Trim.IsEmpty or Document.RecognizedText.Contains(#0) then
+          raise EReadError.Create('Proveniência OCR inválida');
+      end
+      else if (Document.RecognitionIdentity <> '') or (Document.RecognizedText <> '') then
+        raise EReadError.Create('Documento sem revisão contém proveniência OCR');
       Ids.Add(Document.Id, True);
       for Expected in SplitDocument(Document, Base.MaxChars, Base.Overlap) do
       begin
@@ -106,6 +116,14 @@ begin
   Result := RequiredField(Value, Name) as TJSONArray;
 end;
 
+function RequiredBoolean(Value: TJSONValue; const Name: string): Boolean;
+var Field: TJSONValue;
+begin
+  Field := RequiredField(Value, Name);
+  if not (Field is TJSONBool) then raise EReadError.Create('Campo booleano inválido: ' + Name);
+  Result := (Field as TJSONBool).AsBoolean;
+end;
+
 procedure SavePreparedBase(const FileName: string; const Base: TPreparedBase);
 var
   Json, ObjectValue: TJSONObject;
@@ -126,7 +144,7 @@ begin
   TemporaryPath := FullPath + '.' + GUIDToString(Unique) + '.tmp';
   Json := TJSONObject.Create;
   try
-    Json.AddPair('formatVersion', TJSONNumber.Create(1));
+    Json.AddPair('formatVersion', TJSONNumber.Create(2));
     Json.AddPair('preparation', 'normalized-text-split-v1');
     Json.AddPair('modelIdentity', Base.ModelIdentity);
     Json.AddPair('dimension', TJSONNumber.Create(Base.Dimension));
@@ -144,6 +162,10 @@ begin
       ObjectValue.AddPair('page', TJSONNumber.Create(Document.PageNumber));
       ObjectValue.AddPair('text', Document.Text);
       ObjectValue.AddPair('textHash', THashSHA2.GetHashString(Document.Text));
+      ObjectValue.AddPair('ocrReviewed', TJSONBool.Create(Document.WasOcrReviewed));
+      ObjectValue.AddPair('recognitionIdentity', Document.RecognitionIdentity);
+      ObjectValue.AddPair('recognizedText', Document.RecognizedText);
+      ObjectValue.AddPair('recognizedTextHash', THashSHA2.GetHashString(Document.RecognizedText));
     end;
     Items := TJSONArray.Create;
     Json.AddPair('items', Items);
@@ -182,14 +204,15 @@ function LoadPreparedBase(const FileName, ExpectedModelIdentity: string): TPrepa
 var
   Json, Value: TJSONValue;
   Documents, Items, Vector: TJSONArray;
-  I, J: Integer;
+  I, J, FormatVersion: Integer;
 begin
   Result := Default(TPreparedBase);
   if ExpectedModelIdentity.Trim.IsEmpty then raise EArgumentException.Create('Modelo esperado ausente');
   Json := TJSONObject.ParseJSONValue(ReadUtf8Text(FileName));
   if Json = nil then raise EReadError.Create('Base JSON inválida');
   try
-    if not (Json is TJSONObject) or (RequiredInteger(Json, 'formatVersion') <> 1) or
+    FormatVersion := RequiredInteger(Json, 'formatVersion');
+    if not (Json is TJSONObject) or not (FormatVersion in [1, 2]) or
       (RequiredString(Json, 'preparation') <> 'normalized-text-split-v1') then
       raise EReadError.Create('Versão da base não suportada');
     Result.ModelIdentity := RequiredString(Json, 'modelIdentity');
@@ -210,6 +233,19 @@ begin
       Result.Documents[I].Access := RequiredString(Value, 'access');
       Result.Documents[I].PageNumber := RequiredInteger(Value, 'page');
       Result.Documents[I].Text := RequiredString(Value, 'text');
+      if FormatVersion = 2 then
+      begin
+        Result.Documents[I].WasOcrReviewed := RequiredBoolean(Value, 'ocrReviewed');
+        Result.Documents[I].RecognitionIdentity := RequiredString(Value, 'recognitionIdentity');
+        Result.Documents[I].RecognizedText := RequiredString(Value, 'recognizedText');
+        if RequiredString(Value, 'recognizedTextHash') <> THashSHA2.GetHashString(Result.Documents[I].RecognizedText) then
+          raise EReadError.Create('Hash do texto reconhecido inconsistente');
+      end
+      else if ((Value as TJSONObject).GetValue('ocrReviewed') <> nil)
+        or ((Value as TJSONObject).GetValue('recognitionIdentity') <> nil)
+        or ((Value as TJSONObject).GetValue('recognizedText') <> nil)
+        or ((Value as TJSONObject).GetValue('recognizedTextHash') <> nil) then
+        raise EReadError.Create('Proveniência OCR exige versão 2');
       if RequiredString(Value, 'textHash') <> THashSHA2.GetHashString(Result.Documents[I].Text) then
         raise EReadError.Create('Hash textual inconsistente');
     end;

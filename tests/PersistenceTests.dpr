@@ -105,7 +105,7 @@ begin
     Bytes := [$C3, $28];
     TFile.WriteAllBytes(CorruptFile, Bytes);
     RejectFile(CorruptFile, Base.ModelIdentity);
-    TFile.WriteAllText(CorruptFile, StringReplace(Original, '"formatVersion":1', '"formatVersion":1,"formatVersion":1', []), TEncoding.UTF8);
+    TFile.WriteAllText(CorruptFile, StringReplace(Original, '"formatVersion":2', '"formatVersion":2,"formatVersion":2', []), TEncoding.UTF8);
     RejectFile(CorruptFile, Base.ModelIdentity);
     Loaded := LoadPreparedBase(FileName, Base.ModelIdentity);
     LockStream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);

@@ -237,3 +237,9 @@ Na configuração publicada de geração v11, `ExtendedAnswers` terminou com sei
 Rag.Pdf também fornece RenderPdfPage: pixels BGRx com a primeira linha no topo, número de página e dimensões. Compartilha a trava PDFium com a extração. Aceita 72 a 300 dpi, no máximo 10.000 pixels por dimensão e vinte milhões de pixels. Não executa OCR nem muda a importação integrada.
 
 Compile tests/PdfRenderTests.dpr com src e execute com três argumentos: tests/fixtures/pdf/mixed.pdf, caminho absoluto da DLL fixada e um destino BMP gravável. Seis conferências passaram: imagem consistente, página branca e rejeição de página zero, resolução fora do limite, página inexistente e arquivo protegido sem senha. Os dois arquivos BMP de saída são substituídos. As 21 verificações anteriores de extração continuam aprovadas.
+
+## Formato local v2 e revisão OCR experimental
+
+A gravação agora usa formatVersion 2 e conserva estado de revisão, identidade do reconhecimento e texto reconhecido original, além do texto revisado. O leitor aceita também bases v1 sem inventar histórico OCR. Leitores antigos recusam a versão nova. Preservar o texto original pode conservar informação removida na revisão; proteja a base conforme todo o seu conteúdo.
+
+O código próprio de experimental/ocr ainda não está ligado à janela principal. Seus quinze testes de serviço e dezesseis de proveniência foram executados; a distribuição do reconhecedor externo continua em investigação. Nenhum runtime ou dado linguístico está incluído. Consulte experimental/ocr/README.md para os requisitos e limitações. As 19 verificações anteriores de persistência, 14 de importação e 10 de edição continuam passando.
