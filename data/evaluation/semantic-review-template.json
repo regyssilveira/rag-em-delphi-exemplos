@@ -1,0 +1,150 @@
+{
+  "scope": "Ficha de revisão manual das 12 perguntas originais. Não altera perguntas ou critérios automáticos, não gera respostas e não aprova resultados anteriores. Formulações alternativas podem passar se preservarem sentido e suporte.",
+  "questionsSha256": "a6d1ae7bfd650a5fd02782e168e45e6442dc72d4c12500820b74c69adee998b5",
+  "cases": [
+    {
+      "id": "E01",
+      "question": "A entrega veio com menos peças que a compra. Posso encerrar a entrada?",
+      "profile": "operacional",
+      "expectedSource": "recebimento.md",
+      "referencePassage": "O recebimento fica pendente até a decisão do supervisor.",
+      "manualCriterion": "Conservar a pendência diante da divergência. Não afirmar que autorização é, sozinha, suficiente para encerrar todas as etapas do recebimento.",
+      "reviewStatus": "pending",
+      "reviewer": "",
+      "observedClaim": "",
+      "finding": ""
+    },
+    {
+      "id": "E02",
+      "question": "Quem dá o aval para aceitar uma entrega com diferença?",
+      "profile": "operacional",
+      "expectedSource": "recebimento.md",
+      "referencePassage": "Somente o supervisor pode liberar um recebimento com divergência.",
+      "manualCriterion": "Conservar supervisor, exclusividade e recebimento com divergência. Não atribuir a liberação ao operador nem generalizar para qualquer recebimento.",
+      "reviewStatus": "pending",
+      "reviewer": "",
+      "observedClaim": "",
+      "finding": ""
+    },
+    {
+      "id": "E03",
+      "question": "Posso corrigir a compra para ela bater com o que chegou?",
+      "profile": "operacional",
+      "expectedSource": "recebimento.md",
+      "referencePassage": "O operador não altera o pedido para esconder a diferença.",
+      "manualCriterion": "Conservar a finalidade: esconder a diferença. Não transformar essa proibição em impossibilidade técnica de toda correção de compra. Se mencionar registro e encaminhamento, citar também a passagem que os estabelece.",
+      "reviewStatus": "pending",
+      "reviewer": "",
+      "observedClaim": "",
+      "finding": ""
+    },
+    {
+      "id": "E04",
+      "question": "O material que o cliente trouxe de volta pode ser vendido imediatamente?",
+      "profile": "operacional",
+      "expectedSource": "devolucoes.md",
+      "referencePassage": "Itens devolvidos ficam em uma área de conferência e não retornam automaticamente ao estoque disponível. O supervisor verifica a condição e autoriza o retorno ao estoque ou outro destino operacional.",
+      "manualCriterion": "Explicar a conferência e ausência de retorno automático ao estoque. Não inventar uma regra geral de venda, prazo ou autorização suficiente para vender. Não declarar ausência dessa evidência quando ela está no contexto.",
+      "reviewStatus": "pending",
+      "reviewer": "",
+      "observedClaim": "",
+      "finding": ""
+    },
+    {
+      "id": "E05",
+      "question": "Quanto tempo temos para examinar um produto que voltou da venda?",
+      "profile": "operacional",
+      "expectedSource": "devolucoes.md",
+      "referencePassage": "O prazo interno para analisar uma devolução é de dois dias úteis após o registro.",
+      "manualCriterion": "Conservar análise de devolução, dois dias úteis e marco após o registro. Não trocar dias úteis por corridos nem apresentar o prazo fictício como lei.",
+      "reviewStatus": "pending",
+      "reviewer": "",
+      "observedClaim": "",
+      "finding": ""
+    },
+    {
+      "id": "E06",
+      "question": "O que precisa ser anotado quando o cliente devolve um item?",
+      "profile": "operacional",
+      "expectedSource": "devolucoes.md",
+      "referencePassage": "O operador registra produto, quantidade, motivo e condição do item devolvido.",
+      "manualCriterion": "Conservar os quatro dados solicitados. Não trocar operador por cliente se atribuir quem registra; não acrescentar documentos ou campos inexistentes.",
+      "reviewStatus": "pending",
+      "reviewer": "",
+      "observedClaim": "",
+      "finding": ""
+    },
+    {
+      "id": "E07",
+      "question": "Depois de contar as peças, quem decide corrigir o saldo?",
+      "profile": "supervisor",
+      "expectedSource": "estoque.md",
+      "referencePassage": "O supervisor aprova ou rejeita o ajuste de estoque após conferir a evidência da contagem.",
+      "manualCriterion": "Conservar aprovação ou rejeição do ajuste e conferência da evidência da contagem. Não trocar decidir pela execução da correção, nem conferência de evidência por mera realização da contagem.",
+      "reviewStatus": "pending",
+      "reviewer": "",
+      "observedClaim": "",
+      "finding": ""
+    },
+    {
+      "id": "E08",
+      "question": "Quais dados ficam registrados quando aprovamos a correção da quantidade?",
+      "profile": "supervisor",
+      "expectedSource": "estoque.md",
+      "referencePassage": "A aprovação registra usuário, data e justificativa.",
+      "manualCriterion": "Conservar usuário, data e justificativa. Não usar campos do recebimento ou da devolução. Não se abster quando essa passagem consta do contexto permitido.",
+      "reviewStatus": "pending",
+      "reviewer": "",
+      "observedClaim": "",
+      "finding": ""
+    },
+    {
+      "id": "E09",
+      "question": "Depois de contar as peças, quem decide corrigir o saldo?",
+      "profile": "operacional",
+      "expectedSource": null,
+      "referencePassage": null,
+      "manualCriterion": "No perfil operacional, não responder a aprovação de ajuste de estoque usando a pendência de recebimento. Esperar insufficient com claims vazio. Resposta rejeitada pelo parser é falha de geração, não abstenção correta.",
+      "reviewStatus": "pending",
+      "reviewer": "",
+      "observedClaim": "",
+      "finding": ""
+    },
+    {
+      "id": "E10",
+      "question": "Qual porcentagem da venda vai para o funcionário?",
+      "profile": "operacional",
+      "expectedSource": null,
+      "referencePassage": null,
+      "manualCriterion": "Comissão não consta das fontes. Esperar insufficient com claims vazio; não transferir prazo, quantidade ou outra regra para porcentagem de venda.",
+      "reviewStatus": "pending",
+      "reviewer": "",
+      "observedClaim": "",
+      "finding": ""
+    },
+    {
+      "id": "E11",
+      "question": "Em quantos dias a transportadora precisa entregar uma compra?",
+      "profile": "operacional",
+      "expectedSource": null,
+      "referencePassage": null,
+      "manualCriterion": "Prazo de entrega da transportadora não consta das fontes. Esperar insufficient com claims vazio; não transferir os dois dias úteis da análise de devolução.",
+      "reviewStatus": "pending",
+      "reviewer": "",
+      "observedClaim": "",
+      "finding": ""
+    },
+    {
+      "id": "E12",
+      "question": "Qual temperatura deve ser usada para armazenar matéria-prima?",
+      "profile": "supervisor",
+      "expectedSource": null,
+      "referencePassage": null,
+      "manualCriterion": "Temperatura de armazenamento industrial não consta das fontes. Esperar insufficient com claims vazio; não usar conhecimento externo.",
+      "reviewStatus": "pending",
+      "reviewer": "",
+      "observedClaim": "",
+      "finding": ""
+    }
+  ]
+}

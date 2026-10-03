@@ -433,3 +433,7 @@ bin/QuoteBoundaryTests.exe
 ```
 
 Espere seis mensagens `OK:` e `PASSED=6`. A checagem é conservadora em unidades UTF-16 e não constitui um segmentador linguístico universal. As oito perguntas integradas também passaram com a correção, mas as falhas ampliadas permanecem pendentes.
+
+## Conferência semântica do conjunto ampliado
+
+Siga o [roteiro de revisão manual](tests/SEMANTIC_REVIEW.md) e copie a [ficha das 12 perguntas](data/evaluation/semantic-review-template.json) para seus resultados. A ficha conserva perguntas e perfis, apresenta passagens de referência e critérios para conferir condições, finalidade e processo. Não altera os testes automáticos nem certifica as respostas publicadas.
