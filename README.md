@@ -356,3 +356,17 @@ A opção de revisão também recebe PNG, JPEG e BMP diretamente, mantendo a ori
 ## Medição da consulta completa
 
 `QueryBenchmark` mede duas perguntas por rodada através do mesmo coordenador da VCL, com embeddings e geração reais. Separa reabertura, adaptadores, restante da consulta e formatação; não mede eventos ou desenho da janela. Conserva contexto, resposta e falhas no relatório. Consulte [instruções e limites](tests/QUERY_BENCHMARK.md). A prova usa a base existente e não exige biblioteca adicional de medição.
+
+## Revisão de afirmações sem modelos
+
+O programa `tests/ReviewContractDemo.dpr` constrói cinco respostas sintéticas e aplica `ParseAnswer`. Compile no terminal configurado do Delphi 13, na raiz do checkout:
+
+```powershell
+New-Item -ItemType Directory -Force bin | Out-Null
+dcc32 -B -Usrc -Ebin -N0bin tests/ReviewContractDemo.dpr
+if ($LASTEXITCODE -ne 0) { throw 'Falha na compilação' }
+& .\bin\ReviewContractDemo.exe
+if ($LASTEXITCODE -ne 0) { throw 'Falha no exercício' }
+```
+
+Não exige modelos, base persistida ou biblioteca adicional. Resultado literal esperado: `LITERAL_ACCEPTED=4 LITERAL_REJECTED=1`. Nos casos 1 a 3 há responsável errado, permissão sem suporte e ação/condição diferentes da regra. O caso 4 conserva o prazo e seu marco inicial. O caso 5 tem afirmação compatível, mas citação alterada e deve ser recusado. Confira as frases e passagens impressas e preencha a ficha do capítulo 14.
