@@ -370,3 +370,13 @@ if ($LASTEXITCODE -ne 0) { throw 'Falha no exercício' }
 ```
 
 Não exige modelos, base persistida ou biblioteca adicional. Resultado literal esperado: `LITERAL_ACCEPTED=4 LITERAL_REJECTED=1`. Nos casos 1 a 3 há responsável errado, permissão sem suporte e ação/condição diferentes da regra. O caso 4 conserva o prazo e seu marco inicial. O caso 5 tem afirmação compatível, mas citação alterada e deve ser recusado. Confira as frases e passagens impressas e preencha a ficha do capítulo 14.
+
+## Atividade final do capítulo 16
+
+Use `data/exercises/fechamento/questions-fechamento.json` como segundo argumento de `ExtendedAnswers`, no lugar do conjunto ampliado. São cinco perguntas: liberação de recebimento, prazo de devolução, comissão ausente e aprovação de estoque nos perfis supervisor e operacional. `ficha-revisao.json` contém referências e campos vazios para sua revisão; conserve uma cópia por execução.
+
+Para preservar séries anteriores, compile os avaliadores em uma pasta nova dentro de `bin`, usando essa pasta em `-E` e `-N0`. O gerador grava base, respostas e contextos ao lado do executável, independentemente do diretório atual. Passe caminhos completos para corpus e perguntas. Em seguida, execute `RetrievalEvaluation` com a base `extended-answers-base.json` dessa pasta, as mesmas perguntas e um caminho novo de relatório. As instruções de compilação dos dois avaliadores estão nas seções anteriores. Não reutilize a pasta de uma série que deseja conservar: os arquivos de saída são substituídos.
+
+Na prova de 3 de outubro de 2026, com fontes e modelos identificados no projeto, quatro casos passaram e o operacional sobre aprovação de estoque falhou. A recuperação não incluiu estoque para esse perfil, mas o modelo usou a regra de recebimento para uma afirmação sobre estoque e atribuiu a citação ao trecho errado. O parser rejeitou a resposta; isso não equivale à abstenção correta. No caso supervisor, a afirmação identificou quem decide, mas omitiu a conferência da evidência da contagem, presente na citação. Confira essa condição mesmo que o teste automático informe sucesso.
+
+A execução em console não verifica fechar e reabrir a janela. Complete também a sequência VCL do livro: importar os três documentos com suas classificações, preparar um arquivo próprio, fechar após a operação concluída, reabrir, informar o mesmo caminho e carregar o catálogo sem reimportar os originais. Verifique respostas e fontes com a ficha. Esses cinco casos complementam o conjunto ampliado; não o substituem nem comprovam qualidade geral.
