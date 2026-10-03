@@ -40,7 +40,10 @@ begin
   FReview := TOcrReview.Create(Page); FAccess := Access;
   Header := TLabel.Create(Self); Header.Parent := Self; Header.Align := alTop;
   Header.AutoSize := False; Header.Height := 60; Header.WordWrap := True;
-  Header.Caption := Format('Origem: %s | Página: %d. Confira responsáveis, negações e números. Aceitar não grava a base.', [Page.Source, Page.PageNumber]);
+  if Page.PageNumber = 0 then
+    Header.Caption := 'Imagem: ' + Page.Source + '. Confira responsáveis, negações e números. Aceitar não grava a base.'
+  else
+    Header.Caption := Format('Origem: %s | Página: %d. Confira responsáveis, negações e números. Aceitar não grava a base.', [Page.Source, Page.PageNumber]);
   Bottom := TPanel.Create(Self); Bottom.Parent := Self; Bottom.Align := alBottom; Bottom.Height := 48;
   FAccept := TButton.Create(Self); FAccept.Parent := Bottom; FAccept.SetBounds(12, 10, 160, 28);
   FAccept.Caption := 'Aceitar texto revisado'; FAccept.OnClick := Accept;

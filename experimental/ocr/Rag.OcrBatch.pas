@@ -25,6 +25,8 @@ type
   public
     constructor Create(const PdfPath, PdfiumPath, WorkFolder, Access: string;
       Provider: IOcrProvider; const Cancelled: TFunc<Boolean> = nil);
+    constructor CreateImage(const ImagePath, WorkFolder, Access: string;
+      Provider: IOcrProvider; const Cancelled: TFunc<Boolean> = nil);
     destructor Destroy; override;
     function CollectDocuments(const Decide: TOcrDecisionCallback;
       const Cancelled: TFunc<Boolean> = nil): TArray<TDocument>;
@@ -33,7 +35,7 @@ type
   end;
 implementation
 uses System.IOUtils, System.Generics.Collections, Winapi.Windows,
-  Rag.Pdf, Rag.Import;
+  Rag.Pdf, Rag.Import, Rag.OcrImages;
 procedure CheckCancelled(const Cancelled: TFunc<Boolean>);
 begin
   if Assigned(Cancelled) and Cancelled() then raise EOcrCancelled.Create('Lote OCR cancelado');
@@ -102,6 +104,35 @@ begin
     if TextChars > MaxImportedTextChars then raise EReadError.Create('Texto do lote excede o limite');
   end;
 end;
+constructor TOcrPreparedBatch.CreateImage(const ImagePath, WorkFolder, Access: string;
+  Provider: IOcrProvider; const Cancelled: TFunc<Boolean>);
+var Bitmap: TOcrBitmap;
+begin
+  inherited Create;
+  CheckCancelled(Cancelled);
+  if Provider = nil then raise EArgumentException.Create('Reconhecedor ausente');
+  if (Access <> 'operacional') and (Access <> 'supervisor') then
+    raise EArgumentException.Create('Classificação desconhecida');
+  if not TPath.IsPathRooted(WorkFolder) or not TDirectory.Exists(WorkFolder) then
+    raise EArgumentException.Create('Pasta absoluta de trabalho ausente');
+  FSource := TPath.GetFullPath(ImagePath); FAccess := Access;
+  FSourceGuard := TFileStream.Create(FSource, fmOpenRead or fmShareDenyWrite);
+  Bitmap := ReadOcrImage(FSource, Cancelled);
+  FFolder := TPath.Combine(TPath.GetFullPath(WorkFolder), 'ocr-image-' + TGUID.NewGuid.ToString);
+  if TDirectory.Exists(FFolder) then raise EReadError.Create('Pasta temporária já existe');
+  TDirectory.CreateDirectory(FFolder); FOwnFolder := True;
+  SetLength(FPages, 1); FPages[0].NeedsReview := True;
+  FPages[0].PreviewPath := TPath.Combine(FFolder, 'image.bmp');
+  SaveOcrBitmap(FPages[0].PreviewPath, Bitmap); Bitmap := Default(TOcrBitmap);
+  CheckCancelled(Cancelled);
+  FPages[0].Recognition := Provider.Recognize(FPages[0].PreviewPath, FSource, 0, Cancelled);
+  if (FPages[0].Recognition.Source <> FSource) or (FPages[0].Recognition.PageNumber <> 0)
+    or FPages[0].Recognition.RecognitionIdentity.Trim.IsEmpty then
+    raise EReadError.Create('Reconhecimento perdeu origem da imagem');
+  if Length(FPages[0].Recognition.Text) > MaxImportedTextChars then
+    raise EReadError.Create('Texto da imagem excede o limite');
+end;
+
 destructor TOcrPreparedBatch.Destroy;
 var Page: TOcrBatchPage;
 begin

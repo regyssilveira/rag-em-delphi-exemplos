@@ -108,8 +108,12 @@ begin
     if Terminated then Exit;
     if OcrPrepareMode then
     begin
-      OcrBatch := TOcrPreparedBatch.Create(OcrPdfPath, PdfiumPath, OcrWorkFolder,
-        ImportAccess, OcrProvider, function: Boolean begin Result := Terminated; end);
+      if SameText(TPath.GetExtension(OcrPdfPath), '.pdf') then
+        OcrBatch := TOcrPreparedBatch.Create(OcrPdfPath, PdfiumPath, OcrWorkFolder,
+          ImportAccess, OcrProvider, function: Boolean begin Result := Terminated; end)
+      else
+        OcrBatch := TOcrPreparedBatch.CreateImage(OcrPdfPath, OcrWorkFolder,
+          ImportAccess, OcrProvider, function: Boolean begin Result := Terminated; end);
       Exit;
     end;
     if CatalogMode then
@@ -237,7 +241,7 @@ begin
   FOrigins.Anchors := [akLeft, akTop, akRight];
   FOrigins.Style := csDropDownList;
   FOcr := TButton.Create(Self); FOcr.Parent := TopPanel;
-  FOcr.SetBounds(16, 170, 330, 30); FOcr.Caption := 'Importar PDF com revisão OCR';
+  FOcr.SetBounds(16, 170, 330, 30); FOcr.Caption := 'Importar PDF ou imagem com revisão OCR';
   FOcr.OnClick := ImportOcrPdf;
   QuestionPanel := TPanel.Create(Self);
   QuestionPanel.Parent := Self;
@@ -426,7 +430,7 @@ begin
       GetEnvironmentVariable('RAG_OCR_DATA_SHA256'));
     Dialog := TOpenDialog.Create(Self);
     try
-      Dialog.Filter := 'Documento PDF (*.pdf)|*.pdf';
+      Dialog.Filter := 'PDF ou imagem (*.pdf;*.png;*.jpg;*.jpeg;*.bmp)|*.pdf;*.png;*.jpg;*.jpeg;*.bmp';
       Dialog.Options := Dialog.Options + [ofFileMustExist];
       if Dialog.Execute then StartOcrPdf(Dialog.FileName, WorkFolder, Provider);
     finally Dialog.Free; end;
@@ -489,7 +493,7 @@ end;
 
 procedure TAssistantForm.RunOcrCheck(const PdfPath, Runtime, DataFolder, WorkFolder, PdfiumPath, ReportPath: string);
 var Provider: IOcrProvider; Started: UInt64; Base: TPreparedBase; Report: TJSONObject;
-  Snapshot: string; CanClose: Boolean;
+  Snapshot, ExpectedText: string; CanClose: Boolean; ExpectedDocuments: Integer;
   procedure WaitForWorker;
   begin
     Started := GetTickCount64;
@@ -501,6 +505,10 @@ var Provider: IOcrProvider; Started: UInt64; Base: TPreparedBase; Report: TJSONO
     CheckSynchronize(10);
   end;
 begin
+  if SameText(TPath.GetExtension(PdfPath), '.pdf') then
+  begin ExpectedDocuments := 2; ExpectedText := 'Somente o supervisor pode liberar.'; end
+  else
+  begin ExpectedDocuments := 1; ExpectedText := 'Somente o supervisor pode liberar o recebimento.'; end;
   Provider := TTesseractProcessProvider.Create(Runtime, DataFolder, WorkFolder,
     THashSHA2.GetHashStringFromFile(Runtime),
     THashSHA2.GetHashStringFromFile(TPath.Combine(DataFolder, 'por.traineddata')));
@@ -523,9 +531,16 @@ begin
       raise Exception.Create(string(FStatus.Caption));
     Base := LoadPreparedBase(FBasePath.Text,
       'embeddinggemma:300m@85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1|retrieval-prefix-v1|dim=768');
-    if (Length(Base.Documents) <> 2) or not Base.Documents[1].WasOcrReviewed
-      or not Base.Documents[1].RecognizedText.Contains('Somente o supervisor pode liberar.') then
+    if (Length(Base.Documents) <> ExpectedDocuments) or not Base.Documents[ExpectedDocuments - 1].WasOcrReviewed
+      or not Base.Documents[ExpectedDocuments - 1].RecognizedText.Contains(ExpectedText) then
       raise Exception.Create('Proveniência não conservada no fluxo VCL');
+    if (ExpectedDocuments = 1) and ((Base.Documents[0].PageNumber <> 0)
+      or (Base.Documents[0].Source <> TPath.GetFullPath(PdfPath))) then
+      raise Exception.Create('Origem de imagem incoerente');
+    if (ExpectedDocuments = 1) and (not Base.Documents[0].RecognizedText.Contains(
+      'Itens devolvidos não retornam automaticamente ao estoque.')
+      or not Base.Documents[0].RecognizedText.Contains('O prazo interno é de 2 dias úteis.')) then
+      raise Exception.Create('Negação ou prazo perdido no reconhecimento da imagem');
     Snapshot := TFile.ReadAllText(FBasePath.Text, TEncoding.UTF8);
     FReviewDecision := function(const Page: TOcrBatchPage): TOcrDecision
       begin Result := Default(TOcrDecision); Result.Kind := odCancel; end;
@@ -544,6 +559,7 @@ begin
     try
       Report.AddPair('passed', TJSONBool.Create(True));
       Report.AddPair('basePath', FBasePath.Text);
+      Report.AddPair('documents', TJSONNumber.Create(ExpectedDocuments));
       Report.AddPair('scope', 'Reconhecimento e embeddings reais; decisões automatizadas em janela oculta. Gravação, proveniência, cancelamento de revisão e bloqueio de fechamento. Sem revisão humana ou aprovação visual.');
       TFile.WriteAllText(ReportPath, Report.ToJSON, TEncoding.UTF8);
     finally Report.Free; end;

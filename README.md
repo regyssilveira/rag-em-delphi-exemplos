@@ -254,4 +254,6 @@ Compile a aplicação com src e experimental/ocr no caminho de pesquisa:
 dcc32 -B -U"src;experimental/ocr" -N0bin -Ebin app/RagAssistant.dpr
 ```
 
-Selecione a classificação e o destino da base; use Importar PDF com revisão OCR. Confira cada prévia e corrija o texto antes de aceitar. Cancelar a revisão preserva a base anterior. Ignorar está disponível somente para reconhecimento vazio, que precisa ser comparado à imagem. A importação comum mantém seus controles e continua recusando páginas que precisam desse percurso.
+Selecione a classificação e o destino da base; use Importar PDF ou imagem com revisão OCR. Confira cada prévia e corrija o texto antes de aceitar. Cancelar a revisão preserva a base anterior. Ignorar está disponível somente para reconhecimento vazio, que precisa ser comparado à imagem. A importação comum mantém seus controles e continua recusando páginas que precisam desse percurso.
+
+A opção de revisão também recebe PNG, JPEG e BMP diretamente, mantendo a origem sem página numerada. Leitura e transparência usam recursos nativos do Windows; reconhecimento permanece no processo externo configurado. As fixtures próprias estão em tests/fixtures/images. Consulte os limites e a orientação JPEG em experimental/ocr/README.md.

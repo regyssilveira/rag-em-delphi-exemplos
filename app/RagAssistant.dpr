@@ -4,7 +4,8 @@ uses System.SysUtils, System.IOUtils, Vcl.Forms,
   Rag.MainForm in 'Rag.MainForm.pas',
   Rag.Ocr in '../experimental/ocr/Rag.Ocr.pas',
   Rag.OcrBatch in '../experimental/ocr/Rag.OcrBatch.pas',
-  Rag.OcrReviewForm in '../experimental/ocr/Rag.OcrReviewForm.pas';
+  Rag.OcrReviewForm in '../experimental/ocr/Rag.OcrReviewForm.pas',
+  Rag.OcrImages in '../experimental/ocr/Rag.OcrImages.pas';
 
 begin
   try
