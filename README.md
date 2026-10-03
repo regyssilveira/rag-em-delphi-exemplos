@@ -230,7 +230,7 @@ Na configuração publicada de geração v11, `ExtendedAnswers` terminou com sei
 
 `SecurityBoundaryTests` passou cinco verificações, demonstrando também que o arquivo não é criptografado nem autenticado. Quem já pode alterar a base consegue reclassificar coerentemente seus documentos. O teste não altera permissões do Windows. `GenerationSecurityProbe` terminou com dois casos aprovados e dois reprovados: diante de ordens conflitantes, o modelo se absteve apesar de ter a regra válida. Esses programas não demonstram segurança geral.
 
-`LocalBenchmark` replica os mesmos trechos e vetores em três tamanhos e mede construção e vinte buscas por método. Usa um vetor de documento como consulta, sem calcular embedding de pergunta, chamar geração ou medir qualidade. As médias registradas não são latência completa nem requisito mínimo de hardware. A base original permanece intacta. OCR e revisão visual da interface continuam pendentes.
+`LocalBenchmark` replica os mesmos trechos e vetores em três tamanhos e mede construção e vinte buscas por método. Usa um vetor de documento como consulta, sem calcular embedding de pergunta, chamar geração ou medir qualidade. As médias registradas não são latência completa nem requisito mínimo de hardware. A base original permanece intacta. A inspeção visual e a revisão humana da interface continuam pendentes.
 
 ## Renderização de página PDF
 
@@ -242,7 +242,7 @@ Compile tests/PdfRenderTests.dpr com src e execute com três argumentos: tests/f
 
 A gravação agora usa formatVersion 2 e conserva estado de revisão, identidade do reconhecimento e texto reconhecido original, além do texto revisado. O leitor aceita também bases v1 sem inventar histórico OCR. Leitores antigos recusam a versão nova. Preservar o texto original pode conservar informação removida na revisão; proteja a base conforme todo o seu conteúdo.
 
-O código próprio de experimental/ocr ainda não está ligado à janela principal. Seus quinze testes de serviço e dezesseis de proveniência foram executados; a distribuição do reconhecedor externo continua em investigação. Nenhum runtime ou dado linguístico está incluído. Consulte experimental/ocr/README.md para os requisitos e limitações. As 19 verificações anteriores de persistência, 14 de importação e 10 de edição continuam passando.
+O código próprio de experimental/ocr está ligado ao percurso de revisão da janela principal; sua distribuição continua experimental. Seus quinze testes de serviço e dezesseis de proveniência foram executados; a distribuição do reconhecedor externo continua em investigação. Nenhum runtime ou dado linguístico está incluído. Consulte experimental/ocr/README.md para os requisitos e limitações. As 19 verificações anteriores de persistência, 14 de importação e 10 de edição continuam passando.
 
 ## Importação de PDF com revisão OCR
 
@@ -257,3 +257,7 @@ dcc32 -B -U"src;experimental/ocr" -N0bin -Ebin app/RagAssistant.dpr
 Selecione a classificação e o destino da base; use Importar PDF ou imagem com revisão OCR. Confira cada prévia e corrija o texto antes de aceitar. Cancelar a revisão preserva a base anterior. Ignorar está disponível somente para reconhecimento vazio, que precisa ser comparado à imagem. A importação comum mantém seus controles e continua recusando páginas que precisam desse percurso.
 
 A opção de revisão também recebe PNG, JPEG e BMP diretamente, mantendo a origem sem página numerada. Leitura e transparência usam recursos nativos do Windows; reconhecimento permanece no processo externo configurado. As fixtures próprias estão em tests/fixtures/images. Consulte os limites e a orientação JPEG em experimental/ocr/README.md.
+
+## Medição da consulta completa
+
+`QueryBenchmark` mede duas perguntas por rodada através do mesmo coordenador da VCL, com embeddings e geração reais. Separa reabertura, adaptadores, restante da consulta e formatação; não mede eventos ou desenho da janela. Conserva contexto, resposta e falhas no relatório. Consulte [instruções e limites](tests/QUERY_BENCHMARK.md). A prova usa a base existente e não exige biblioteca adicional de medição.
