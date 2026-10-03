@@ -69,5 +69,33 @@
       "manualConclusion": null,
       "notes": null
     }
-  ]
+  ],
+  "claimReviewInstructions": [
+    "Copie o modelo abaixo para cada objeto de claimsReviewed; mantenha uma entrada por afirmação.",
+    "Conserve texto e citação integrais; não corrija a saída do gerador.",
+    "Confira responsável, ação e procedimento separadamente, mesmo quando o resultado automático passa.",
+    "Use conclusão sem suporte quando a citação não sustenta a afirmação; diferencie de citação não literal.",
+    "Para status insufficient, registre se havia evidência permitida no contexto; ausência de afirmações não comprova abstenção adequada."
+  ],
+  "claimReviewTemplate": {
+    "text": null,
+    "label": null,
+    "documentId": null,
+    "quote": null,
+    "questionProcedure": null,
+    "sourceProcedure": null,
+    "assertedActor": null,
+    "sourceActor": null,
+    "assertedAction": null,
+    "sourceAction": null,
+    "negationAndExclusivity": null,
+    "conditions": null,
+    "numberAndUnit": null,
+    "startingEvent": null,
+    "sourceAllowed": null,
+    "literalQuote": null,
+    "semanticSupport": null,
+    "conclusion": null,
+    "notes": null
+  }
 }
