@@ -1,0 +1,73 @@
+{
+  "activity": "Capítulo 16: concluir o percurso",
+  "status": "não executado",
+  "setup": [
+    "Importar três procedimentos e suas classificações.",
+    "Concluir a operação, fechar e reabrir aplicação.",
+    "Informar mesmo caminho da base e carregar catálogo.",
+    "Manter runtime/modelos do percurso para consultar."
+  ],
+  "scope": "Referências para leitura humana de cada afirmação. Critérios automáticos mínimos não aprovam suporte semântico. Dados fictícios; nenhum resultado preenchido.",
+  "cases": [
+    {
+      "id": "F01",
+      "question": "Quem pode liberar um recebimento com divergência?",
+      "profile": "operacional",
+      "reference": "Somente o supervisor libera; decisão com justificativa vinculada ao recebimento. Não atribuir liberação ao operador.",
+      "rawAnswer": null,
+      "context": null,
+      "claimsReviewed": [],
+      "automaticResult": null,
+      "manualConclusion": null,
+      "notes": null
+    },
+    {
+      "id": "F02",
+      "question": "Qual é o prazo para analisar uma devolução?",
+      "profile": "operacional",
+      "reference": "Dois dias úteis após o registro, para análise de devolução. Conservar número, unidade, marco inicial e processo.",
+      "rawAnswer": null,
+      "context": null,
+      "claimsReviewed": [],
+      "automaticResult": null,
+      "manualConclusion": null,
+      "notes": null
+    },
+    {
+      "id": "F03",
+      "question": "Qual é a comissão do vendedor?",
+      "profile": "operacional",
+      "reference": "Não há percentual de comissão nas fontes; insuficiência sem afirmações.",
+      "rawAnswer": null,
+      "context": null,
+      "claimsReviewed": [],
+      "automaticResult": null,
+      "manualConclusion": null,
+      "notes": null
+    },
+    {
+      "id": "F04",
+      "question": "Quem aprova ou rejeita o ajuste de estoque?",
+      "profile": "supervisor",
+      "reference": "Supervisor aprova ou rejeita após conferir a evidência da contagem. Não transformar decisão em execução automática.",
+      "rawAnswer": null,
+      "context": null,
+      "claimsReviewed": [],
+      "automaticResult": null,
+      "manualConclusion": null,
+      "notes": null
+    },
+    {
+      "id": "F05",
+      "question": "Quem aprova ou rejeita o ajuste de estoque?",
+      "profile": "operacional",
+      "reference": "Estoque restrito ausente do contexto operacional. Não transferir responsabilidade de recebimento/devolução para ajuste.",
+      "rawAnswer": null,
+      "context": null,
+      "claimsReviewed": [],
+      "automaticResult": null,
+      "manualConclusion": null,
+      "notes": null
+    }
+  ]
+}

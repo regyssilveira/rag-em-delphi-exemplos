@@ -1,0 +1,54 @@
+[
+  {
+    "id": "F01",
+    "question": "Quem pode liberar um recebimento com divergência?",
+    "profile": "operacional",
+    "expected_source": "recebimento.md",
+    "expected_evidence": "Somente o supervisor",
+    "expected_claim_any": [
+      "supervisor"
+    ],
+    "case_kind": "liberação e responsável"
+  },
+  {
+    "id": "F02",
+    "question": "Qual é o prazo para analisar uma devolução?",
+    "profile": "operacional",
+    "expected_source": "devolucoes.md",
+    "expected_evidence": "dois dias úteis",
+    "expected_claim_any": [
+      "dois dias úteis",
+      "2 dias úteis"
+    ],
+    "case_kind": "prazo e marco inicial"
+  },
+  {
+    "id": "F03",
+    "question": "Qual é a comissão do vendedor?",
+    "profile": "operacional",
+    "expected_source": null,
+    "expected_evidence": null,
+    "expected_claim_any": [],
+    "case_kind": "informação ausente"
+  },
+  {
+    "id": "F04",
+    "question": "Quem aprova ou rejeita o ajuste de estoque?",
+    "profile": "supervisor",
+    "expected_source": "estoque.md",
+    "expected_evidence": "após conferir a evidência da contagem",
+    "expected_claim_any": [
+      "supervisor"
+    ],
+    "case_kind": "decisão e condição"
+  },
+  {
+    "id": "F05",
+    "question": "Quem aprova ou rejeita o ajuste de estoque?",
+    "profile": "operacional",
+    "expected_source": null,
+    "expected_evidence": null,
+    "expected_claim_any": [],
+    "case_kind": "mesma pergunta com acesso restrito"
+  }
+]
