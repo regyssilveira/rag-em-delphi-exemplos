@@ -1,0 +1,29 @@
+[
+  {
+    "id": "I01",
+    "question": "Quem aprova a liberação do lote após a inspeção?",
+    "profile": "operacional",
+    "expected_source": "inspecao-recebimento.md",
+    "expected_evidence": "Somente o responsável pela qualidade",
+    "expected_claim_any": [
+      "responsável pela qualidade"
+    ]
+  },
+  {
+    "id": "I02",
+    "question": "Quais dados o operador registra antes de encaminhar o material para inspeção?",
+    "profile": "operacional",
+    "expected_source": "inspecao-recebimento.md",
+    "expected_evidence": "produto, lote, quantidade recebida e fornecedor",
+    "expected_claim_any": [
+      "fornecedor"
+    ]
+  },
+  {
+    "id": "I03",
+    "question": "Qual é a temperatura para armazenar a matéria-prima?",
+    "profile": "operacional",
+    "expected_source": null,
+    "expected_evidence": null
+  }
+]
