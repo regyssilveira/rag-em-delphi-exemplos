@@ -11,6 +11,8 @@ var Base:TPreparedBase; Items:TArray<TEmbeddedChunk>; Chunks:TArray<TChunk>;
 begin
 try
   if ParamCount<>2 then raise Exception.Create('Informe base original e relatório');
+  if SameFileName(TPath.GetFullPath(ParamStr(1)), TPath.GetFullPath(ParamStr(2))) then
+    raise EArgumentException.Create('Relatório não pode substituir a base');
   Base:=LoadPreparedBase(ParamStr(1),
     'embeddinggemma:300m@85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1|retrieval-prefix-v1|dim=768');
   if Length(Base.Items)=0 then raise Exception.Create('Base vazia');
