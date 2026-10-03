@@ -437,3 +437,7 @@ Espere seis mensagens `OK:` e `PASSED=6`. A checagem é conservadora em unidades
 ## Conferência semântica do conjunto ampliado
 
 Siga o [roteiro de revisão manual](tests/SEMANTIC_REVIEW.md) e copie a [ficha das 12 perguntas](data/evaluation/semantic-review-template.json) para seus resultados. A ficha conserva perguntas e perfis, apresenta passagens de referência e critérios para conferir condições, finalidade e processo. Não altera os testes automáticos nem certifica as respostas publicadas.
+
+## Verificação manual da janela
+
+Depois de compilar, siga [o roteiro VCL](tests/VCL_MANUAL_REVIEW.md) para conferir diálogos, escala de tela, persistência, cancelamento e fechamento. Esse roteiro complementa as verificações automáticas e não representa uma aprovação já executada.
