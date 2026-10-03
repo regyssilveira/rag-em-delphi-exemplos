@@ -4,7 +4,18 @@ Material próprio do livro de Régys Borges da Silveira. Delphi 13 é a versão 
 
 ## Etapa atual
 
-Fundação em Object Pascal: leitura UTF-8 estrita, extração limitada de DOCX e PDF por página, divisão com sobreposição, busca lexical simples e filtragem demonstrativa por perfil. Ainda não é o assistente completo: VCL, persistência, OCR, embeddings e geração estão em desenvolvimento. A pontuação atual é uma referência didática por proporção de termos, não BM25 nem busca semântica. Encontrar termos não prova que a pergunta tem resposta.
+O projeto contém a fundação em Object Pascal, leitores de documentos, buscas lexical e vetorial, persistência local, integração com modelos e aplicação VCL. Os exemplos foram exercitados no Delphi 13 para Windows de 32 bits, com alcances diferentes: testes sintéticos, consultas com modelos reais e handlers da janela sem interação humana. A geração ampliada conserva seis aprovações e seis falhas automáticas; a revisão visual da aplicação e a implantação acessível do OCR continuam pendentes. Encontrar trechos ou passar em um teste mínimo não comprova qualidade geral.
+
+Comece pela fundação e avance conforme os capítulos. Os recursos adicionais são necessários apenas nas etapas que os utilizam:
+
+| Etapa | Requisitos adicionais | O que conferir |
+|---|---|---|
+| Fundação | Nenhum modelo ou runtime externo | 19 verificações, fontes e perfis didáticos |
+| Leitura PDF | PDFium fixado, compatível com Win32 | Páginas, texto e limites do leitor |
+| Consulta integrada e VCL | Runtime e dois modelos identificados nos locks | Pergunta, contexto, afirmações, citações e abstenção |
+| Revisão OCR experimental | Reconhecedor externo e português identificados | Prévia, texto original/revisado e gravação após aceitação |
+
+Não é necessário Python para executar o percurso do leitor. Os documentos próprios e os programas de verificação estão neste repositório. O livro apresenta os conceitos e fontes essenciais para acompanhamento independente.
 
 ## Documentos e avaliação
 
@@ -17,10 +28,13 @@ Em um terminal com Delphi 13 configurado, na raiz do repositório:
 ```powershell
 New-Item -ItemType Directory -Force bin
 dcc32 -B -U"src" -N0"bin" -E"bin" tests/FoundationTests.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 .\bin\FoundationTests.exe .\data\corpus
 ```
 
-O teste retorna código 0 quando passa e 1 quando falha. Não chama serviços nem exige credenciais. Confere leitura, cobertura dos trechos, busca, ausência de correspondência, acesso e argumentos inválidos. Não avalia respostas de IA nem demonstra segurança de produção: o perfil é fornecido pelo chamador e precisa vir de identidade autenticada numa integração real.
+Com os documentos fornecidos, espere 19 linhas iniciadas por OK: e a mensagem TODAS AS VERIFICAÇÕES PASSARAM. O teste retorna código 0 quando passa e 1 quando falha. Não chama serviços nem exige credenciais. Confere leitura, cobertura dos trechos, busca, ausência de correspondência, acesso e argumentos inválidos. Não avalia respostas de IA nem demonstra segurança de produção: o perfil é fornecido pelo chamador e precisa vir de identidade autenticada numa integração real.
 
 Não publicar credenciais, documentos reais ou binários gerados. Dependências adicionais, quando indispensáveis, serão identificadas e justificadas.
 
@@ -35,10 +49,13 @@ Na raiz do checkout, com bin existente e Delphi 13 configurado:
 
 ```powershell
 dcc32 -B -U"src" -N0"bin" -E"bin" tests/IngestionTests.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 .\bin\IngestionTests.exe .\tests\fixtures
 ```
 
-Os fixtures próprios estão prontos para uso; não exigem Python. As 14 verificações comparam texto, acentos, espaços, células e normalização e exercitam rejeições explícitas. Os programas de fundação e ingestão foram compilados e executados com sucesso no Delphi 13 Win32. A geração de respostas, OCR e aplicação VCL continuam pendentes.
+Os fixtures próprios estão prontos para uso; não exigem Python. As 14 verificações comparam texto, acentos, espaços, células e normalização e exercitam rejeições explícitas. Os programas de fundação e ingestão foram compilados e executados com sucesso no Delphi 13 Win32. Os demais recursos estão em seções próprias; estas 14 verificações avaliam somente ingestão.
 
 
 ## Extração de PDF
@@ -48,6 +65,9 @@ O leitor `Rag.Pdf.pas` preserva cada página e sua origem. PDFium é a única de
 ```powershell
 .\scripts\setup-pdfium.ps1
 dcc32 -B -U"src" -N0"bin" -E"bin" tests/PdfTests.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 $pdfiumDll = (Resolve-Path .\bin\pdfium\bin\pdfium.dll).Path
 .\bin\PdfTests.exe $pdfiumDll .\tests\fixtures\pdf
 ```
@@ -60,8 +80,14 @@ As 21 verificações incluem páginas, acentos, negação, origem nos trechos, i
 
 ```powershell
 dcc32 -B -Usrc -N0bin -Ebin tests/LexicalTests.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/LexicalTests.exe
 dcc32 -B -Usrc -N0bin -Ebin tests/LexicalDemo.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/LexicalDemo.exe data/corpus
 ```
 
@@ -75,9 +101,15 @@ Os 20 testes matemáticos usam vetores sintéticos identificados. A demonstraç�
 
 ```powershell
 dcc32 -B -Usrc -N0bin -Ebin tests/VectorTests.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/VectorTests.exe
 ollama pull embeddinggemma:300m
 dcc32 -B -Usrc -N0bin -Ebin tests/EmbeddingDemo.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/EmbeddingDemo.exe data/corpus
 ```
 
@@ -89,10 +121,19 @@ O runtime deve estar ativo; execute `ollama serve` em outro terminal somente se 
 
 ```powershell
 dcc32 -B -Usrc -N0bin -Ebin tests/PersistenceTests.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/PersistenceTests.exe
 dcc32 -B -Usrc -N0bin -Ebin tests/HybridTests.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/HybridTests.exe
 dcc32 -B -Usrc -N0bin -Ebin tests/CacheDemo.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/CacheDemo.exe --prepare data/corpus data/updates
 bin/CacheDemo.exe --offline
 ```
@@ -109,14 +150,20 @@ A base é limitada a 16 MiB e não é criptografada nem autenticada. Gravação 
 
 ```powershell
 dcc32 -B -Usrc -N0bin -Ebin tests/ContextTests.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/ContextTests.exe
 dcc32 -B -Usrc -N0bin -Ebin tests/ContextDemo.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/ContextDemo.exe
 ```
 
 Os 11 testes de seleção independem de runtime e base. `ContextDemo` exige a base final produzida por `CacheDemo --prepare data/corpus data/updates`, descrito acima; usa recuperação lexical local, sem chamadas ao modelo. Na prova, selecionou dois trechos de devoluções e conservou o prazo atualizado de três dias úteis. Caminhos de origem e comprimento serializado variam conforme o checkout.
 
-JSON preserva separação e texto, mas não impede que um modelo siga instruções maliciosas do documento. Fontes selecionadas também podem ser insuficientes para responder. A integração de geração, validação de citações e avaliação de respostas ainda está em produção.
+JSON preserva separação e texto, mas não impede que um modelo siga instruções maliciosas do documento. Fontes selecionadas também podem ser insuficientes para responder. A integração de geração, validação de citações e avaliação aparece nas próximas seções; os 11 testes acima não a validam.
 
 ## Geração e avaliação exploratória
 
@@ -126,12 +173,21 @@ JSON preserva separação e texto, mas não impede que um modelo siga instruçõ
 
 ```powershell
 dcc32 -B -Usrc -N0bin -Ebin tests/AnswerTests.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/AnswerTests.exe
 ollama pull qwen2.5:7b
 dcc32 -B -Usrc -N0bin -Ebin tests/GenerationProbe.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/GenerationProbe.exe supported
 bin/GenerationProbe.exe absent
 dcc32 -B -Usrc -N0bin -Ebin tests/IntegratedDemo.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/IntegratedDemo.exe data/corpus data/evaluation/questions.json
 ```
 
@@ -139,7 +195,7 @@ O runtime precisa estar ativo. A prova controlada usa um texto próprio com praz
 
 A instrução inicial falhou na pergunta de comissão; a versão 2 aprovada na prova controlada exige conferir a informação solicitada e copiar literalmente. Dois casos aprovados não comprovam confiabilidade geral. `IntegratedDemo` informa os casos aprovados e rejeitados; a ocorrência da evidência esperada não substitui leitura de todas as afirmações.
 
-O adaptador limita caracteres de entrada, solicita janela de 8.192 tokens e saída de até 512 tokens. Limite de caracteres não é contagem de tokens. Respostas cortadas por limite de saída são recusadas. O limite HTTP é conferido após receber a resposta. `LastResponse` contém saída bruta para diagnóstico: não registrar dados de documentos reais sem uma política adequada. Instâncias não devem ser compartilhadas entre chamadas concorrentes. Autenticação, resistência a instruções maliciosas e interface VCL ainda estão em produção.
+O adaptador limita caracteres de entrada, solicita janela de 8.192 tokens e saída de até 512 tokens. Limite de caracteres não é contagem de tokens. Respostas cortadas por limite de saída são recusadas. O limite HTTP é conferido após receber a resposta. `LastResponse` contém saída bruta para diagnóstico: não registrar dados de documentos reais sem uma política adequada. Instâncias não devem ser compartilhadas entre chamadas concorrentes. Autenticação de usuários, resistência geral a instruções maliciosas e inspeção visual da VCL permanecem pendentes.
 
 ## Apresentação de respostas e mensagem Unicode
 
@@ -147,11 +203,20 @@ O adaptador limita caracteres de entrada, solicita janela de 8.192 tokens e saí
 
 ```powershell
 dcc32 -B -Usrc -N0bin -Ebin tests/PresentationTests.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/PresentationTests.exe
 dcc32 -B -Usrc -N0bin -Ebin tests/PresentationDemo.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/PresentationDemo.exe supported
 bin/PresentationDemo.exe absent
 dcc32 -B -Usrc -N0bin -Ebin tests/JsonMessageTests.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/JsonMessageTests.exe
 ```
 
@@ -165,6 +230,9 @@ Estado atual da geração: `qwen2.5:7b`, instrução versão 11, passou dois cas
 
 ```powershell
 dcc32 -B -Usrc -N0bin -Ebin tests/AssistantTests.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/AssistantTests.exe
 ```
 
@@ -175,16 +243,22 @@ Oito verificações com provedores sintéticos identificados: chamadas/origem, c
 `app/RagAssistant.dpr` cria a janela sem arquivo DFM. A consulta usa um thread próprio e provedores privados; controles são atualizados no evento de conclusão, na thread principal. Enquanto há uma operação, novas operações e fechamento são recusados. Cancelamento é cooperativo: aguarda a chamada em andamento e descarta o resultado.
 
 ```powershell
-dcc32 -B -Usrc -N0bin -Ebin app/RagAssistant.dpr
+dcc32 -B -U"src;experimental/ocr" -N0bin -Ebin app/RagAssistant.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/RagAssistant.exe
 ```
 
 Esta etapa abre uma base já preparada, como `bin/integrated-base.json`, criada pelo exemplo de avaliação. O percurso pela janela foi executado com modelos reais em modo de teste oculto: recebimento com fonte, abstenção operacional sobre ajuste, consulta como supervisor, conferência da passagem, limpeza ao mudar perfil e cancelamento imediato. Não equivale a inspeção visual nem interação humana. O perfil é didático e não autentica um usuário do ERP.
 
-A janela também importa e atualiza documentos, prepara embeddings e grava a base local em segundo plano. `Rag.Import` já compõe leitura, reimportação e remoção de fontes, sem gravar a base. Quatorze verificações cobrem DOCX, PDF digital, classificação, nomes repetidos, remoção de todas as páginas e rejeição explícita de páginas sem texto. Requer o PDFium fixado para os casos PDF. OCR permanece pendente.
+A janela também importa e atualiza documentos, prepara embeddings e grava a base local em segundo plano. `Rag.Import` já compõe leitura, reimportação e remoção de fontes, sem gravar a base. Quatorze verificações cobrem DOCX, PDF digital, classificação, nomes repetidos, remoção de todas as páginas e rejeição explícita de páginas sem texto. Requer o PDFium fixado para os casos PDF. O botão comum recusa páginas sem texto; o percurso OCR experimental usa outro botão e revisão explícita.
 
 ```powershell
 dcc32 -B -Usrc -N0bin -Ebin tests/ImportTests.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/ImportTests.exe . (Resolve-Path 'bin/pdfium/bin/pdfium.dll').Path
 ```
 
@@ -196,6 +270,9 @@ A composição de importação limita o texto agregado a 500.000 unidades UTF-16
 
 ```powershell
 dcc32 -B -Usrc -N0bin -Ebin tests/BaseEditorTests.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/BaseEditorTests.exe .
 ```
 
@@ -213,14 +290,29 @@ Os programas abaixo compilam no Delphi 13 Win32, com `src` no caminho de pesquis
 
 ```powershell
 dcc32 -B -Usrc -N0bin -Ebin tests/RetrievalEvaluation.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/RetrievalEvaluation.exe bin/integrated-base.json data/evaluation/questions-extended.json bin/retrieval-extended.json
 dcc32 -B -Usrc -N0bin -Ebin tests/ExtendedAnswers.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/ExtendedAnswers.exe data/corpus data/evaluation/questions-extended.json
 dcc32 -B -Usrc -N0bin -Ebin tests/SecurityBoundaryTests.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/SecurityBoundaryTests.exe .
 dcc32 -B -Usrc -N0bin -Ebin tests/GenerationSecurityProbe.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/GenerationSecurityProbe.exe bin/security-generation
 dcc32 -B -Usrc -N0bin -Ebin tests/LocalBenchmark.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 bin/LocalBenchmark.exe bin/integrated-base.json bin/local-benchmark.json
 ```
 
@@ -236,7 +328,7 @@ Na configuração publicada de geração v11, `ExtendedAnswers` terminou com sei
 
 Rag.Pdf também fornece RenderPdfPage: pixels BGRx com a primeira linha no topo, número de página e dimensões. Compartilha a trava PDFium com a extração. Aceita 72 a 300 dpi, no máximo 10.000 pixels por dimensão e vinte milhões de pixels. Não executa OCR nem muda a importação integrada.
 
-Compile tests/PdfRenderTests.dpr com src e execute com três argumentos: tests/fixtures/pdf/mixed.pdf, caminho absoluto da DLL fixada e um destino BMP gravável. Seis conferências passaram: imagem consistente, página branca e rejeição de página zero, resolução fora do limite, página inexistente e arquivo protegido sem senha. Os dois arquivos BMP de saída são substituídos. As 21 verificações anteriores de extração continuam aprovadas.
+Compile tests/PdfRenderTests.dpr com src e execute com três argumentos: tests/fixtures/pdf/mixed.pdf, caminho absoluto da DLL fixada e um destino BMP gravável. Seis conferências passaram: imagem consistente, página branca e rejeição de página zero, resolução fora do limite, página inexistente e arquivo protegido sem senha. Os dois arquivos BMP de saída são substituídos. O programa recusa destinos que coincidam, após normalização, com PDF, DLL ou encrypted.pdf, incluindo o bitmap adicional da página branca. Sete recusas preservaram as cópias de entrada; vínculos do sistema de arquivos não são resolvidos. Use uma pasta de saída própria. As 21 verificações anteriores de extração continuam aprovadas.
 
 ## Formato local v2 e revisão OCR experimental
 
@@ -252,6 +344,9 @@ Compile a aplicação com src e experimental/ocr no caminho de pesquisa:
 
 ```powershell
 dcc32 -B -U"src;experimental/ocr" -N0bin -Ebin app/RagAssistant.dpr
+if ($LASTEXITCODE -ne 0) {
+  throw 'Compilação falhou; corrija antes de executar.'
+}
 ```
 
 Selecione a classificação e o destino da base; use Importar PDF ou imagem com revisão OCR. Confira cada prévia e corrija o texto antes de aceitar. Cancelar a revisão preserva a base anterior. Ignorar está disponível somente para reconhecimento vazio, que precisa ser comparado à imagem. A importação comum mantém seus controles e continua recusando páginas que precisam desse percurso.
