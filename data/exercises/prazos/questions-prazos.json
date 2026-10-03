@@ -1,0 +1,16 @@
+[
+  {
+    "id": "P01",
+    "question": "Qual é o prazo para analisar uma devolução?",
+    "profile": "operacional",
+    "expected_source": "devolucoes.md",
+    "expected_evidence": "dois dias úteis"
+  },
+  {
+    "id": "P02",
+    "question": "Qual é o prazo da entrega agendada?",
+    "profile": "operacional",
+    "expected_source": "entregas.md",
+    "expected_evidence": "cinco dias úteis"
+  }
+]
