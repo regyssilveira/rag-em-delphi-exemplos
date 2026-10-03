@@ -204,10 +204,6 @@ begin
   TJSONString ) then
   raise Exception . Create (
   'Resposta incompleta ou contrato ' + 'inválido' ) ;
-  TFile . WriteAllText ( TPath . Combine (
-  ExtractFilePath ( ParamStr ( 0 ) ) , 'generation-' +
-  ParamStr ( 1 ) + '.json' ) , Payload , TEncoding .
-  UTF8 ) ;
   Writeln ( Json . FindValue ( 'message.content' ) .
   Value ) ;
   Answer := ParseAnswer ( Json . FindValue (
@@ -219,10 +215,6 @@ begin
   Text . Contains ( 'três dias úteis' ) then
   raise Exception . Create (
   'Resposta não contém o prazo esperado' ) ;
-  TFile . WriteAllText ( TPath . Combine (
-  ExtractFilePath ( ParamStr ( 0 ) ) , 'generation-' +
-  ParamStr ( 1 ) + '.json' ) , Payload , TEncoding .
-  UTF8 ) ;
   Writeln ( 'OK: geração real ' , ParamStr ( 1 ) ) ;
   Writeln ( Json . FindValue ( 'message.content' ) .
   Value ) ;
