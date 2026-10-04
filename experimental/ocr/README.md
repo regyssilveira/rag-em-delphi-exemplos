@@ -17,3 +17,23 @@ Para a janela principal, configure antes de iniciar RagAssistant.exe as variáve
 OcrVclFlowProbe.dpr requer app, src e experimental/ocr no caminho de pesquisa. Recebe seis caminhos absolutos: PDF, executável OCR, pasta de idioma, pasta de trabalho, DLL PDFium e relatório. Usa OCR e embeddings reais; o runtime local de modelos deve estar ativo e o modelo de embeddings do percurso principal disponível. As escolhas de revisão são automatizadas. A base de teste tem nome próprio na pasta de trabalho; não mede qualidade de respostas nem legibilidade da tela.
 
 OcrReviewFormProbe.dpr recebe o caminho absoluto de uma prévia BMP. Exercita os handlers sem mostrar a janela: correção e proveniência, aceitação desabilitada para texto vazio e descarte permitido somente quando o reconhecimento original está vazio. Não constitui revisão humana ou inspeção visual. O formulário mostra a prévia em tamanho original, com rolagem; texto reconhecido vazio não comprova que a página física esteja branca.
+
+
+## Provider OCR nativo em preparação
+
+`Rag.WindowsOcr.pas` implementa `IOcrProvider` com Windows.Media.Ocr, leitura WIC de PNG/JPEG/BMP, cancelamento, limite de espera, referência de página e identidade do idioma escolhido pelo Windows. Não usa Tesseract ou dados linguísticos externos. Exige identidade de pacote MSIX e reconhecedor instalado no Windows. Não é o provider padrão da janela nesta versão.
+
+A unidade compilou em Delphi 13 Win32. `WindowsOcrGuardTests.dpr` aprovou três casos: tempo inválido, cancelamento inicial e origem inválida. Isso não comprova reconhecimento. `NativeOcrTests.dpr` é a prova preparada para execução empacotada com imagem de referência, imagem branca e caminho JSON de resultado; sua execução não foi concluída porque a solicitação de elevação foi cancelada. Não executar esse programa sem identidade de pacote para declarar implantação aprovada.
+
+Uma prova anterior separada (`OcrImageProbe` do livro) executou Windows.Media.Ocr empacotado e preservou responsável, negação e prazo. Esse resultado não deve ser transferido automaticamente ao novo provider ou à interação VCL. A integração nativa permanece experimental até a prova real correspondente.
+
+
+Na raiz dos exemplos, em terminal Delphi 13 configurado:
+
+```powershell
+dcc32 -B -U"src;experimental/ocr" -N0"bin" -E"bin" experimental/ocr/WindowsOcrGuardTests.dpr
+if ($LASTEXITCODE -ne 0) { throw 'Compilação dos testes nativos falhou.' }
+.\bin\WindowsOcrGuardTests.exe
+```
+
+Resultado esperado: `PASSED=3`, código de saída zero. Não instala pacote, altera certificados ou executa reconhecimento. Para compilar a prova de reconhecimento, use o mesmo comando com `experimental/ocr/NativeOcrTests.dpr`; execução exige o pacote MSIX próprio. Os argumentos são imagem de referência, imagem branca e arquivo JSON de resultado, todos fora da pasta protegida de instalação. A configuração de implantação dessa prova ainda não é um percurso aprovado para o leitor.
