@@ -14,6 +14,8 @@ type
       PageNumber: Integer; const Cancelled: TFunc<Boolean>): TOcrPage;
   end;
 
+function HasWindowsOcrPackageIdentity: Boolean;
+
 implementation
 
 uses System.Classes, System.Win.WinRT, System.Win.ComObj,
@@ -24,6 +26,13 @@ uses System.Classes, System.Win.WinRT, System.Win.ComObj,
 function GetCurrentPackageFullName(var PackageFullNameLength: Cardinal;
   PackageFullName: PWideChar): Longint; stdcall;
   external 'kernel32.dll' name 'GetCurrentPackageFullName';
+
+function HasWindowsOcrPackageIdentity: Boolean;
+var PackageLength: Cardinal;
+begin
+  PackageLength := 0;
+  Result := GetCurrentPackageFullName(PackageLength, nil) = ERROR_INSUFFICIENT_BUFFER;
+end;
 
 procedure CheckCancelled(const Cancelled: TFunc<Boolean>);
 begin

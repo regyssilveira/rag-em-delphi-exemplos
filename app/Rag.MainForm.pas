@@ -92,7 +92,7 @@ uses System.IOUtils, System.JSON, Winapi.Windows,
   Rag.Persistence, Rag.Embeddings, Rag.Generation,
     Rag.Answers,
   Rag.Context, Rag.Presentation, Rag.BaseEditor,
-    Rag.OcrReviewForm, System.Hash;
+    Rag.OcrReviewForm, Rag.WindowsOcr, System.Hash;
 
 constructor TQueryWorker.Create(const BasePath,
   Question, Profile: string);
@@ -519,7 +519,10 @@ begin
   try
     WorkFolder := GetEnvironmentVariable(
       'RAG_OCR_WORK');
-    Provider := TTesseractProcessProvider.Create(
+    if HasWindowsOcrPackageIdentity then
+      Provider := TWindowsOcrProvider.Create
+    else Provider :=
+      TTesseractProcessProvider.Create(
       GetEnvironmentVariable('RAG_OCR_EXE'),
         GetEnvironmentVariable('RAG_OCR_DATA'),
       WorkFolder, GetEnvironmentVariable(
@@ -652,7 +655,9 @@ begin
   begin ExpectedDocuments := 1; ExpectedText :=
     'Somente o supervisor pode ' +
     'liberar o recebimento.'; end;
-  Provider := TTesseractProcessProvider.Create(
+  if HasWindowsOcrPackageIdentity then
+    Provider := TWindowsOcrProvider.Create
+  else Provider := TTesseractProcessProvider.Create(
     Runtime, DataFolder, WorkFolder,
     THashSHA2.GetHashStringFromFile(Runtime),
     THashSHA2.GetHashStringFromFile(TPath.Combine(

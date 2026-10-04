@@ -441,3 +441,7 @@ Siga o [roteiro de revisão manual](tests/SEMANTIC_REVIEW.md) e copie a [ficha d
 ## Verificação manual da janela
 
 Depois de compilar, siga [o roteiro VCL](tests/VCL_MANUAL_REVIEW.md) para conferir diálogos, escala de tela, persistência, cancelamento e fechamento. Esse roteiro complementa as verificações automáticas e não representa uma aprovação já executada.
+
+### OCR nativo em aplicação empacotada
+
+A VCL escolhe o provider Windows.Media.Ocr quando possui identidade de pacote MSIX. A compilação comum continua usando o provider externo configurado. O pacote nativo próprio é composto com `scripts/package-native-ocr.ps1`; consulte `experimental/ocr/README.md` para requisitos de assinatura, instalação, idioma e revisão. O script de composição não instala certificados ou o pacote. `tests/fixtures/images/blank.png` é a imagem branca válida; `empty.png` é arquivo inválido de zero bytes.
