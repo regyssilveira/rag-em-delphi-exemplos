@@ -1,6 +1,6 @@
 # OCR e revisão — experimento
 
-Este código próprio acompanha o capítulo 6. A janela principal oferece importação de PDF ou imagem com revisão; instalação do reconhecedor e aprovação visual continuam pendentes. A distribuição do reconhecedor externo continua em investigação; não há runtime nem dados linguísticos incluídos. Os hashes esperados do executável e de por.traineddata vêm de uma configuração conferida, não de texto fornecido pelo documento.
+Este código próprio acompanha o capítulo 6. A janela principal oferece importação de PDF ou imagem com revisão; o provider nativo empacotado foi validado, enquanto a aprovação visual e a instalação em outra máquina permanecem próprias. A distribuição do reconhecedor externo continua em investigação; não há runtime nem dados linguísticos incluídos. Os hashes esperados do executável e de por.traineddata vêm de uma configuração conferida, não de texto fornecido pelo documento.
 
 A leitura direta aceita PNG, JPEG e BMP com recursos do Windows: arquivo até 64 MiB, dimensões até 10.000 por eixo e área até vinte milhões de pixels. Transparência é composta sobre branco; JPEG com orientação de metadados diferente de 1 é recusado para salvar os pixels na posição de leitura. OcrImageTests recebe fixtures de imagem e pasta gravável; treze conferências nativas, sem modelos. As imagens próprias em tests/fixtures/images estão disponíveis sem Python para o leitor.
 
@@ -19,9 +19,9 @@ OcrVclFlowProbe.dpr requer app, src e experimental/ocr no caminho de pesquisa. R
 OcrReviewFormProbe.dpr recebe o caminho absoluto de uma prévia BMP. Exercita os handlers sem mostrar a janela: correção e proveniência, aceitação desabilitada para texto vazio e descarte permitido somente quando o reconhecimento original está vazio. Não constitui revisão humana ou inspeção visual. O formulário mostra a prévia em tamanho original, com rolagem; texto reconhecido vazio não comprova que a página física esteja branca.
 
 
-## Provider OCR nativo em preparação
+## Provider OCR nativo
 
-`Rag.WindowsOcr.pas` implementa `IOcrProvider` com Windows.Media.Ocr, leitura WIC de PNG/JPEG/BMP, cancelamento, limite de espera, referência de página e identidade do idioma escolhido pelo Windows. Não usa Tesseract ou dados linguísticos externos. Exige identidade de pacote MSIX e reconhecedor instalado no Windows. Não é o provider padrão da janela nesta versão.
+`Rag.WindowsOcr.pas` implementa `IOcrProvider` com Windows.Media.Ocr, leitura WIC de PNG/JPEG/BMP, cancelamento, limite de espera, referência de página e identidade do idioma escolhido pelo Windows. Não usa Tesseract ou dados linguísticos externos. Exige identidade de pacote MSIX e reconhecedor instalado no Windows. É selecionado pela janela quando existe identidade de pacote.
 
 A unidade compilou em Delphi 13 Win32. `WindowsOcrGuardTests.dpr` aprovou três casos: tempo inválido, cancelamento inicial e origem inválida. Isso não comprova reconhecimento. `NativeOcrTests.dpr` é a prova preparada para execução empacotada com imagem de referência, imagem branca e caminho JSON de resultado; sua execução posterior passou com imagem de referência e blank.png em pacote completo, sem manifesto de identidade embutido no EXE. Não executar esse programa sem identidade de pacote para declarar implantação aprovada.
 
@@ -47,7 +47,7 @@ O executável do pacote completo deve ser compilado sem o manifesto MSIX embutid
 
 ## Composição do pacote da aplicação
 
-Compile `scripts/build.ps1` e então execute `scripts/package-native-ocr.ps1 -MakeAppxPath <caminho-do-makeappx.exe-do-Windows-SDK>`. O Windows SDK fornece essa ferramenta; não é biblioteca ligada ao Delphi. O resultado `bin/RagAssistant.msix` contém apenas o EXE próprio, manifesto e ícones próprios, sem runtime Tesseract, modelos ou PDFium. O script não assina, não instala e não altera confiança.
+Compile `scripts/build.ps1` e então execute `scripts/package-native-ocr.ps1 -MakeAppxPath <caminho-do-makeappx.exe-do-Windows-SDK>`. O Windows SDK fornece essa ferramenta; não é biblioteca ligada ao Delphi. O resultado `bin/RagAssistant.msix` contém apenas o EXE próprio, manifesto e ícones próprios, sem runtime Tesseract ou modelos. Para PDF escaneado na aplicação instalada, execute setup-pdfium.ps1 e passe -IncludePdfium ao empacotamento: a DLL Win32 fixada, LICENSE e licenses/ serão incluídos em pdfium/. Sem essa opção, o pacote atende imagem e não inclui a DLL exigida pelo percurso PDF. O script não assina, não instala e não altera confiança.
 
 Um MSIX de desenvolvimento precisa de assinatura que corresponda ao Publisher do manifesto e confiança no certificado na máquina de instalação. Não distribua chave privada ou certificado de teste pelo Git. Assinatura, instalação e primeira abertura em outra máquina precisam de validação própria. Dentro do pacote, a VCL usa Windows.Media.Ocr; fora do pacote, conserva Tesseract configurado, pela diferença de requisitos de implantação. Configure uma pasta gravável em RAG_OCR_WORK para o lote e revise o texto antes da gravação.
 
