@@ -4,7 +4,7 @@ Material próprio do livro de Régys Borges da Silveira. Delphi 13 é a versão 
 
 ## Etapa atual
 
-O projeto contém a fundação em Object Pascal, leitores de documentos, buscas lexical e vetorial, persistência local, integração com modelos e aplicação VCL. Os exemplos foram exercitados no Delphi 13 para Windows de 32 bits, com alcances diferentes: testes sintéticos, consultas com modelos reais e handlers da janela sem interação humana. A geração ampliada conserva seis aprovações e seis falhas automáticas; a revisão visual da aplicação e a implantação acessível do OCR continuam pendentes. Encontrar trechos ou passar em um teste mínimo não comprova qualidade geral.
+O projeto contém a fundação em Object Pascal, leitores de documentos, buscas lexical e vetorial, persistência local, integração com modelos e aplicação VCL. Os exemplos foram exercitados no Delphi 13 para Windows de 32 bits, com alcances diferentes: testes sintéticos, consultas com modelos reais e handlers da janela sem interação humana. A geração ampliada conserva seis aprovações e seis falhas automáticas; o OCR nativo empacotado passou nos percursos de imagem e PDF; revisão visual da aplicação e instalação em outra máquina permanecem próprias. Encontrar trechos ou passar em um teste mínimo não comprova qualidade geral.
 
 Comece pela fundação e avance conforme os capítulos. Os recursos adicionais são necessários apenas nas etapas que os utilizam:
 
@@ -313,7 +313,7 @@ O catálogo é administrativo e lista todas as origens, inclusive as reservadas 
 
 O worker permanece com `FreeOnTerminate = False`; a conclusão agenda sua liberação na thread principal por `ForceQueue`. Cancelamento é cooperativo. Uma gravação já confirmada é apresentada como concluída mesmo se chegar um pedido tardio de cancelamento.
 
-Provas por handlers em janela oculta não aprovam layout ou interação física com os diálogos. OCR ainda está em produção. Consulte as limitações de formato, tamanho e identidade antes de importar seus próprios documentos.
+Provas por handlers em janela oculta não aprovam layout ou interação física com os diálogos. O OCR nativo foi validado com decisões automatizadas em MSIX. Para preparar a aplicação, consulte `experimental/ocr/README.md`; use `-IncludePdfium` no empacotamento quando precisar importar PDF escaneado. Consulte as limitações de formato, tamanho e identidade antes de importar seus próprios documentos.
 
 ## Avaliação ampliada, segurança e medição local
 
