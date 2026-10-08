@@ -3,7 +3,7 @@
   "api": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
   "modelSelection": "RAG_GENERATION_MODEL, explicit, no default",
   "credential": "GEMINI_API_KEY environment only, header x-goog-api-key",
-  "promptVersion": "answer-prompt-remote-v1",
+  "promptVersion": "answer-prompt-remote-v2",
   "generationConfig": {
     "temperature": 0,
     "candidateCount": 1,
@@ -11,9 +11,24 @@
     "responseMimeType": "application/json"
   },
   "actualVersion": "modelVersion in each successful raw envelope",
-  "semanticStatus": "pending-real-api-evaluation",
+  "semanticStatus": "rejected-in-original-extended-evaluation",
   "contractTests": 17,
   "nativeSdkRequired": false,
   "automaticRetries": false,
-  "localFallback": false
+  "localFallback": false,
+  "observedLiveModel": "gemini-3.5-flash",
+  "observedDate": "2026-10-08",
+  "observedExtendedAutomatic": {
+    "passed": 11,
+    "failed": 1
+  },
+  "observedExtendedSemantic": {
+    "passed": 10,
+    "failed": 2,
+    "failedCases": [
+      "E01",
+      "E08"
+    ]
+  },
+  "didacticStatus": "3 passed; remaining 5 blocked by observed daily quota"
 }

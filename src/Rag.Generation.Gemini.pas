@@ -1,4 +1,4 @@
-unit Rag.Generation.Gemini;
+﻿unit Rag.Generation.Gemini;
 
 interface
 
@@ -42,7 +42,7 @@ end;
 
 function TGeminiAnswerProvider.GetModelIdentity: string;
 begin
-  Result := 'gemini/' + FModel + '|answer-prompt-remote-v1';
+  Result := 'gemini/' + FModel + '|answer-prompt-remote-v2';
   if FActualModel <> '' then Result := Result + '|actual=' + FActualModel;
 end;
 
@@ -153,13 +153,23 @@ begin
     Http.CustomHeaders['x-goog-api-key'] := FApiKey;
     Body := TStringStream.Create(RequestText, TEncoding.UTF8);
     try
-      Response := Http.Post('https://generativelanguage.googleapis.com/v1beta/models/' +
-        FModel + ':generateContent', Body);
+      try
+        Response := Http.Post('https://generativelanguage.googleapis.com/v1beta/models/' +
+          FModel + ':generateContent', Body);
+      except
+        on E: Exception do
+          raise EAnswerTransportError.Create('Falha de conexão remota ou tempo limite');
+      end;
     finally Body.Free; end;
+    FLastResponse := Response.ContentAsString(TEncoding.UTF8).Replace(FApiKey, '[REDACTED]');
+    if Length(FLastResponse) > 1048576 then
+    begin
+      FLastResponse := '';
+      raise EAnswerTransportError.Create('Resposta remota excessiva');
+    end;
     if Response.StatusCode <> 200 then
-      raise Exception.CreateFmt('Geração remota: HTTP %d (sem repetição automática)',
+      raise EAnswerTransportError.CreateFmt('Geração remota: HTTP %d (sem repetição automática)',
         [Response.StatusCode]);
-    FLastResponse := Response.ContentAsString(TEncoding.UTF8);
     Result := DecodeResponse(FLastResponse, Context, FActualModel);
   finally Http.Free; end;
 end;

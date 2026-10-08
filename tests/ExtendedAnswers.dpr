@@ -2,7 +2,7 @@
 
 {$APPTYPE CONSOLE}
 
-uses System.SysUtils, System.IOUtils, System.JSON,
+uses System.Classes, System.SysUtils, System.IOUtils, System.JSON,
   Rag.Types, Rag.Core,
   Rag.Vectors, Rag.Embeddings, Rag.Persistence,
     Rag.Lexical, Rag.Hybrid,
@@ -151,6 +151,7 @@ begin
                 'extended-context-' + Id + '.json'),
             ContextJson.ToJSON, TEncoding.UTF8);
             finally ContextJson.Free; end;
+            TThread.Sleep(StrToIntDef(GetEnvironmentVariable('RAG_EVALUATION_DELAY_MS'), 0));
             Answer := Generator.Generate(Question,
             Context);
             TFile.WriteAllText(TPath.Combine(
@@ -218,6 +219,11 @@ begin
             Generator.LastResponse, TEncoding.UTF8);
               Writeln('FAIL: ', Id, ' | ', E.Message
             );
+              if E is EAnswerTransportError then
+              begin
+                Writeln('TRANSPORT_ABORT');
+                raise;
+              end;
             end;
           end;
           Flush(Output);

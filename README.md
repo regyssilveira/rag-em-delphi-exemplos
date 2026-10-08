@@ -1,4 +1,4 @@
-# RAG em Delphi — Exemplos
+﻿# RAG em Delphi — Exemplos
 
 Material próprio do livro de Régys Borges da Silveira. Delphi 13 é a versão mínima; licença Apache 2.0 (LICENSE). O livro explica os exemplos sem exigir download deste repositório.
 
@@ -450,3 +450,5 @@ A VCL escolhe o provider Windows.Media.Ocr quando possui identidade de pacote MS
 A VCL e os exemplos `ExtendedAnswers`, `IntegratedDemo`, `PresentationDemo` e `QueryBenchmark` utilizam `CreateAnswerProvider`. O padrão permanece local; `RAG_GENERATION_PROVIDER=gemini` seleciona explicitamente a implementação remota. Configuração, compilação e avaliação: [REMOTE_GENERATION.md](REMOTE_GENERATION.md).
 
 O adaptador compilou em Delphi 13 Win32 e passou 17 verificações sintéticas do contrato. Isso não significa aprovação de conectividade real ou fidelidade semântica: a avaliação por API ainda requer credencial e modelo disponível na conta. Os documentos e as perguntas originais foram preservados.
+
+Avaliação real em 08/10/2026: o adaptador remoto autenticou e respondeu com `gemini-3.5-flash`, instrução remota v2. Das 12 perguntas ampliadas, 11 passaram nos critérios automáticos; a leitura técnica reprovou E01 (citação incompleta e redação ambígua) e E08 (recusa indevida apesar de evidência disponível), deixando 10 aprovações semânticas. Três perguntas didáticas passaram antes de HTTP 429 por cota diária. Essa configuração não está aprovada. Os testes interrompem na primeira falha de transporte e o script Windows preserva cada execução em pasta própria. Não alterar perguntas ou critérios para contornar as reprovações.

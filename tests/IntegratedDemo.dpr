@@ -2,7 +2,7 @@
 
 {$APPTYPE CONSOLE}
 
-uses System.SysUtils, System.IOUtils, System.JSON, Rag.Types, Rag.Core,
+uses System.Classes, System.SysUtils, System.IOUtils, System.JSON, Rag.Types, Rag.Core,
   Rag.Vectors, Rag.Embeddings, Rag.Persistence, Rag.Lexical, Rag.Hybrid,
   Rag.Context, Rag.Answers, Rag.Generation;
 
@@ -68,6 +68,7 @@ begin
             Context := BuildContext(FuseRankings(Lexical.Search(Question, Profile, 6),
               Vector.Search(Embeddings.EmbedQuery(Question), Embeddings.ModelIdentity, Profile, 6),
               Profile, 6), Profile, 6000, 6);
+            TThread.Sleep(StrToIntDef(GetEnvironmentVariable('RAG_EVALUATION_DELAY_MS'), 0));
             Answer := Generator.Generate(Question, Context);
             TFile.WriteAllText(TPath.Combine(ExtractFilePath(ParamStr(0)), 'integrated-' + Id + '.json'), Generator.LastResponse, TEncoding.UTF8);
             FoundSource := False;
@@ -101,6 +102,7 @@ begin
               Inc(Failed);
               TFile.WriteAllText(TPath.Combine(ExtractFilePath(ParamStr(0)), 'integrated-' + Id + '.json'), Generator.LastResponse, TEncoding.UTF8);
               Writeln('FAIL: ', Id, ' | ', E.Message);
+            if E is EAnswerTransportError then begin Writeln('TRANSPORT_ABORT'); raise; end;
             end;
           end;
           Flush(Output);

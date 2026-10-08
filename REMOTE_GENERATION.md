@@ -1,4 +1,4 @@
-# Geração remota de referência
+﻿# Geração remota de referência
 
 A aplicação e a persistência continuam em Delphi 13/VCL e em arquivos locais. A inferência remota usa HTTPS/JSON nativos; nenhum SDK é necessário. O serviço externo é necessário para executar o modelo treinado, que não acompanha o Delphi. O adaptador Gemini é uma referência intercambiável, ainda sem aprovação de fidelidade no conjunto completo.
 
@@ -50,3 +50,17 @@ Fontes oficiais:
 - [Autenticação por chave](https://ai.google.dev/gemini-api/docs/api-key)
 - [Modelos disponíveis](https://ai.google.dev/gemini-api/docs/models)
 - [Preços e modalidades gratuitas](https://ai.google.dev/gemini-api/docs/pricing)
+
+## Executar automaticamente no Windows
+
+Depois de cadastrar `GEMINI_API_KEY` nas variáveis de usuário, execute na raiz do repositório:
+
+```powershell
+./scripts/Invoke-RemoteEvaluation.ps1 -Model 'IDENTIFICADOR_DISPONIVEL_NA_CONTA'
+```
+
+O script carrega a chave diretamente das variáveis de usuário, sem mostrá-la e sem exigir reiniciar o terminal. Compila os dois avaliadores, guarda cada execução em pasta nova e espaça as chamadas em 15 segundos. O parâmetro `-IntervalMilliseconds` permite ampliar esse intervalo. A cota depende da conta e do modelo; o intervalo não garante disponibilidade do serviço nem ausência de outros limites.
+
+HTTP 404 pode indicar modelo indisponível para a conta mesmo que ele apareça na listagem de modelos. HTTP 429 indica limite atingido; HTTP 503 pode indicar alta demanda. Os avaliadores interrompem na primeira falha de transporte, preservando o envelope de erro com a chave removida. Não habilitam cobrança nem repetem automaticamente a chamada. Casos semanticamente reprovados continuam sendo falhas mesmo quando há conectividade.
+
+Na conta avaliada em 08/10/2026, o serviço informou também limite gratuito de 20 chamadas por dia para `gemini-3.5-flash`. O espaçamento resolve apenas a frequência por minuto; não amplia a cota diária. Esse valor é uma observação da execução, não uma condição garantida para todos os leitores. Não é necessário habilitar cobrança para usar o adaptador; uma avaliação pode precisar ser dividida entre dias, preservando configuração, artefatos e versão efetiva do modelo. A configuração ensaiada continua reprovada semanticamente, independentemente desse limite.

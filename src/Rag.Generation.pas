@@ -5,6 +5,7 @@ interface
 uses System.SysUtils, Rag.Context, Rag.Answers;
 
 type
+  EAnswerTransportError = class(Exception);
   IAnswerProvider = interface
     ['{F33E377E-DF45-498A-B9CB-8DE0C2EFC653}']
     function Generate(const Question: string; const
@@ -61,8 +62,9 @@ function AnswerInstructions: string;
 begin
   Result := Instructions + #10 +
     'Conserve responsável, ação, objeto, alternativas, condições, finalidade, ' +
-    'negação, exclusividade, unidades e marco temporal. Aprovar ou rejeitar ' +
-    'um ajuste não significa executar a correção. Não transfira regras entre atividades.';
+    'negação, exclusividade, unidades e marco temporal. Não transforme aprovação em execução. ' +
+    'Se a fonte oferece ações ou destinos alternativos, preserve essas alternativas na resposta: ' +
+    'não apresente uma das opções como obrigação. Não transfira regras entre atividades.';
 end;
 
 function CreateAnswerProvider: IAnswerProvider;
