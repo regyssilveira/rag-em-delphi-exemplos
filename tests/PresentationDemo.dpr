@@ -36,7 +36,7 @@ begin
       ;
     Context := BuildContext(Ranked, 'operacional',
       2000);
-    Provider := TOllamaAnswerProvider.Create;
+    Provider := CreateAnswerProvider;
     Answer := Provider.Generate(Question, Context);
     if Answer.HasAnswer <> (ParamStr(1) =
       'supported') then

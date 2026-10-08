@@ -34,7 +34,7 @@ begin
   try
     if ParamCount <> 2 then raise Exception.Create('Use data/corpus data/evaluation/questions.json');
     Embeddings := TOllamaEmbeddingProvider.Create(EmbeddingModel, EmbeddingDigest, 768);
-    Generator := TOllamaAnswerProvider.Create;
+    Generator := CreateAnswerProvider;
     SetLength(Documents, 3);
     Documents[0] := LoadDocument(TPath.Combine(ParamStr(1), 'recebimento.md'), 'operacional');
     Documents[1] := LoadDocument(TPath.Combine(ParamStr(1), 'devolucoes.md'), 'operacional');

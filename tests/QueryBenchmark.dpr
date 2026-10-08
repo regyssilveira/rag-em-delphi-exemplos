@@ -204,7 +204,7 @@ begin
             Digest, 768));
             Embeddings := TimedEmbedding;
             TimedAnswer := TTimedAnswer.Create(
-            TOllamaAnswerProvider.Create);
+            CreateAnswerProvider);
             Generator := TimedAnswer;
             ProviderMs :=
             Watch.Elapsed.TotalMilliseconds;

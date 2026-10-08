@@ -48,7 +48,7 @@ begin
       'data/evaluation/questions.' + 'json');
     Embeddings := TOllamaEmbeddingProvider.Create(
       EmbeddingModel, EmbeddingDigest, 768);
-    Generator := TOllamaAnswerProvider.Create;
+    Generator := CreateAnswerProvider;
     SetLength(Documents, 3);
     Documents[0] := LoadDocument(TPath.Combine(
       ParamStr(1), 'recebimento.md'), 'operacional')

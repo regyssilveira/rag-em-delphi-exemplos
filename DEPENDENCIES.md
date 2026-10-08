@@ -52,3 +52,9 @@ A revisão de licenças transitivas e a implantação acessível do runtime exte
 
 
 Validação integrada de 4 de outubro de 2026: OcrVclFlowProbe empacotado passou com ocr-reference.png (um documento) e mixed.pdf (dois documentos, incluindo página renderizada). Reconhecimento, embeddings, persistência e proveniência reais; cancelamento preservou a base e fechamento durante trabalho foi recusado. Não equivale a aprovação humana da janela.
+
+## Inferência remota opcional
+
+`Rag.Generation.Gemini` usa `System.Net.HttpClient`, `System.JSON` e TLS do Windows. Não acrescenta biblioteca Delphi nem SDK de terceiros. A dependência externa é o serviço de inferência: o Delphi não fornece pesos treinados nem execução hospedada de um modelo. Há seleção explícita do provedor; o padrão local permanece disponível.
+
+Os termos, disponibilidade, uso de dados, limites e preços pertencem ao serviço escolhido. A modalidade gratuita não é um requisito permanente do livro. Consulte [REMOTE_GENERATION.md](REMOTE_GENERATION.md) e as fontes oficiais ali vinculadas. O adaptador remoto ainda não foi aprovado semanticamente por uma execução real.

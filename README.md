@@ -445,3 +445,8 @@ Depois de compilar, siga [o roteiro VCL](tests/VCL_MANUAL_REVIEW.md) para confer
 ### OCR nativo em aplicação empacotada
 
 A VCL escolhe o provider Windows.Media.Ocr quando possui identidade de pacote MSIX. A compilação comum continua usando o provider externo configurado. O pacote nativo próprio é composto com `scripts/package-native-ocr.ps1`; consulte `experimental/ocr/README.md` para requisitos de assinatura, instalação, idioma e revisão. O script de composição não instala certificados ou o pacote. `tests/fixtures/images/blank.png` é a imagem branca válida; `empty.png` é arquivo inválido de zero bytes.
+## Alternativa de geração por API
+
+A VCL e os exemplos `ExtendedAnswers`, `IntegratedDemo`, `PresentationDemo` e `QueryBenchmark` utilizam `CreateAnswerProvider`. O padrão permanece local; `RAG_GENERATION_PROVIDER=gemini` seleciona explicitamente a implementação remota. Configuração, compilação e avaliação: [REMOTE_GENERATION.md](REMOTE_GENERATION.md).
+
+O adaptador compilou em Delphi 13 Win32 e passou 17 verificações sintéticas do contrato. Isso não significa aprovação de conectividade real ou fidelidade semântica: a avaliação por API ainda requer credencial e modelo disponível na conta. Os documentos e as perguntas originais foram preservados.

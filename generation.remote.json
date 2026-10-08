@@ -1,0 +1,19 @@
+{
+  "provider": "gemini",
+  "api": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+  "modelSelection": "RAG_GENERATION_MODEL, explicit, no default",
+  "credential": "GEMINI_API_KEY environment only, header x-goog-api-key",
+  "promptVersion": "answer-prompt-remote-v1",
+  "generationConfig": {
+    "temperature": 0,
+    "candidateCount": 1,
+    "maxOutputTokens": 4096,
+    "responseMimeType": "application/json"
+  },
+  "actualVersion": "modelVersion in each successful raw envelope",
+  "semanticStatus": "pending-real-api-evaluation",
+  "contractTests": 17,
+  "nativeSdkRequired": false,
+  "automaticRetries": false,
+  "localFallback": false
+}

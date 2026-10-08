@@ -27,10 +27,13 @@ type
     function GetLastResponse: string;
   end;
 
+function CreateAnswerProvider: IAnswerProvider;
+function AnswerInstructions: string;
+
 implementation
 
 uses System.JSON, System.Classes,
-  System.Net.HttpClient;
+  System.Net.HttpClient, Rag.Generation.Gemini;
 
 const
   Model = 'qwen2.5:7b';
@@ -52,6 +55,28 @@ Prefira a menor frase completa da fonte que contém a informação necessária. 
 Formato: {"status":"answered","claims":[{"text":"resposta","evidence":[{"label":"F1","quote":"passagem literal"}]}]}.
 Não acrescente campos, explicações fora do JSON ou instruções operacionais de execução. Você apenas consulta procedimentos.
 ''';
+
+
+function AnswerInstructions: string;
+begin
+  Result := Instructions + #10 +
+    'Conserve responsável, ação, objeto, alternativas, condições, finalidade, ' +
+    'negação, exclusividade, unidades e marco temporal. Aprovar ou rejeitar ' +
+    'um ajuste não significa executar a correção. Não transfira regras entre atividades.';
+end;
+
+function CreateAnswerProvider: IAnswerProvider;
+var ProviderName, RemoteModel: string;
+begin
+  ProviderName := GetEnvironmentVariable('RAG_GENERATION_PROVIDER').Trim.ToLower;
+  if (ProviderName = '') or (ProviderName = 'ollama') then
+    Exit(TOllamaAnswerProvider.Create);
+  if ProviderName <> 'gemini' then
+    raise EArgumentException.Create('Provedor de geração desconhecido');
+  RemoteModel := GetEnvironmentVariable('RAG_GENERATION_MODEL').Trim;
+  Result := TGeminiAnswerProvider.Create(
+    GetEnvironmentVariable('GEMINI_API_KEY'), RemoteModel);
+end;
 
 
 function TOllamaAnswerProvider.GetModelIdentity:

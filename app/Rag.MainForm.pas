@@ -214,7 +214,7 @@ begin
     end;
     Base := LoadPreparedBase(FBasePath,
       Embeddings.ModelIdentity);
-    Generator := TOllamaAnswerProvider.Create;
+    Generator := CreateAnswerProvider;
     Response := QueryPreparedBase(Base, FQuestion,
       FProfile, Embeddings, Generator,
       function: Boolean begin Result := Terminated;
