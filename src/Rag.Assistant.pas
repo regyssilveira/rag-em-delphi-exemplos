@@ -21,7 +21,7 @@ function QueryPreparedBase(const Base: TPreparedBase
 
 implementation
 
-uses Rag.Types, Rag.Lexical, Rag.Vectors, Rag.Hybrid
+uses Rag.Types, Rag.Lexical, Rag.Vectors, Rag.Hybrid, Rag.EvidenceContext
   ;
 
 procedure CheckCancellation(const IsCancelled: TFunc
@@ -44,6 +44,7 @@ var
   Vector: TVectorIndex;
   I, Allowed: Integer;
   QueryVector: TEmbedding;
+  Ranked: TArray<TSearchResult>;
 begin
   Result := Default(TAssistantResponse);
   if (Profile <> 'operacional') and (Profile <>
@@ -88,11 +89,14 @@ begin
       QueryVector := Embeddings.EmbedQuery(Question)
         ;
       CheckCancellation(IsCancelled);
-      Result.Context := BuildContext(FuseRankings(
+      Ranked := FuseRankings(
         Lexical.Search(Question, Profile, 6),
         Vector.Search(QueryVector,
           Base.ModelIdentity, Profile, 6),
-        Profile, 6), Profile, 6000, 6);
+        Profile, 6);
+      if Supports(Generator, IWholePassageAnswerProvider) then
+        Result.Context := BuildEvidenceContext(Ranked, Base.Documents, Profile)
+      else Result.Context := BuildContext(Ranked, Profile, 6000, 6);
       CheckCancellation(IsCancelled);
       if Length(Result.Context.Sources) > 0 then
         Result.Answer := Generator.Generate(Question
