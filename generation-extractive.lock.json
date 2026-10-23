@@ -1,0 +1,13 @@
+{
+  "runtime": "Ollama",
+  "runtimeVersion": "0.30.5",
+  "model": "qwen2.5:7b",
+  "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e",
+  "promptVersion": "extractive-paragraph-v2",
+  "mode": "ollama-extractive",
+  "output": "status and selected labels; Delphi presents original paragraphs",
+  "context": {"maxSerializedUtf16": 6000, "maxParagraphUtf16": 1000, "maxPassages": 12},
+  "options": {"temperature": 0, "seed": 7, "num_ctx": 8192, "num_predict": 128},
+  "stream": false,
+  "selectionStatus": "experimental; awaiting bounded evaluation; not the default"
+}

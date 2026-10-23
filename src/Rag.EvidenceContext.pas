@@ -10,7 +10,7 @@ function BuildEvidenceContext(const Ranked: TArray<TSearchResult>;
 
 implementation
 
-uses System.StrUtils, System.Generics.Collections;
+uses System.StrUtils, System.Generics.Collections, System.JSON;
 
 function BuildEvidenceContext(const Ranked: TArray<TSearchResult>;
   const Documents: TArray<TDocument>; const Profile: string;
@@ -19,6 +19,47 @@ var Candidate, Expanded: TSearchResult; Document: TDocument;
   Items: TList<TSearchResult>; Seen: TDictionary<string, Boolean>;
   Found: Boolean; LineStart, LineEnd, First, Last, A, B: Integer;
   SkippedLong, SkippedForbidden: Integer; Line: string;
+
+  procedure AddHeadings;
+  var Root: TJSONObject; Values: TJSONArray; I, P, E: Integer;
+    Title, Section, Heading: string; Source: TContextSource;
+    Current: TDocument;
+  begin
+    Root := TJSONObject.ParseJSONValue(Result.Serialized) as TJSONObject;
+    try
+      Values := Root.GetValue('sources') as TJSONArray;
+      for I := 0 to High(Result.Sources) do
+      begin
+        Source := Result.Sources[I]; Title := ''; Section := '';
+        for Current in Documents do
+          if Current.Id = Source.Chunk.DocumentId then Break;
+        P := 1;
+        while P < Source.Chunk.StartOffset do
+        begin
+          E := PosEx(#10, Current.Text, P);
+          if E = 0 then E := Length(Current.Text) + 1;
+          Heading := Copy(Current.Text, P, E - P).Trim;
+          if Heading.StartsWith('# ') then
+          begin Title := Heading.Substring(2).Trim; Section := ''; end
+          else if Heading.StartsWith('##') then
+          begin
+            while Heading.StartsWith('#') do Delete(Heading, 1, 1);
+            Section := Heading.Trim;
+          end;
+          P := E + 1;
+        end;
+        (Values.Items[I] as TJSONObject).AddPair('documentTitle', Title);
+        (Values.Items[I] as TJSONObject).AddPair('sectionTitle', Section);
+      end;
+      while (Length(Root.ToJSON) > MaxChars) and (Values.Count > 0) do
+      begin
+        Values.Remove(Values.Count - 1).Free;
+        SetLength(Result.Sources, Length(Result.Sources) - 1);
+        Inc(Result.SkippedBudget);
+      end;
+      Result.Serialized := Root.ToJSON;
+    finally Root.Free; end;
+  end;
 
   procedure AddParagraph;
   var Id: string;
@@ -94,6 +135,7 @@ begin
       AddParagraph;
     end;
     Result := BuildContext(Items.ToArray, Profile, MaxChars, 12);
+    AddHeadings;
     Inc(Result.SkippedBudget, SkippedLong);
     Inc(Result.SkippedForbidden, SkippedForbidden);
   finally Seen.Free; Items.Free; end;

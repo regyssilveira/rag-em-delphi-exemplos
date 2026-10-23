@@ -29,6 +29,9 @@ const
   Instructions = '''
 Selecione evidências para responder à pergunta usando somente os parágrafos fornecidos.
 Retorne apenas JSON com status e labels. Não escreva nem reformule a resposta.
+Antes de selecionar, identifique a atividade, a etapa e a informação pedidas. Compare-as com o título, a seção e o texto de cada candidato.
+Uma conferência, uma solicitação e uma aprovação são etapas distintas. Dados registrados numa etapa não respondem aos dados solicitados em outra.
+As perguntas podem usar paráfrases. Não exija coincidência literal de palavras se a passagem estabelece a mesma relação ou um pré-requisito que impede a ação imediata.
 Use status answered e os rótulos dos parágrafos que contêm a regra solicitada.
 Selecione a regra completa, incluindo condições e consequências necessárias para entender a orientação.
 Uma pergunta pode ter resposta negativa: selecione a proibição ou restrição que permite responder.
@@ -42,7 +45,7 @@ O Delphi exibirá exatamente os parágrafos selecionados. Não invente identific
 ''';
 
 function TOllamaExtractiveProvider.GetModelIdentity: string;
-begin Result := Model + '@' + Digest + '|extractive-paragraph-v1'; end;
+begin Result := Model + '@' + Digest + '|extractive-paragraph-v2'; end;
 
 function TOllamaExtractiveProvider.GetLastResponse: string;
 begin Result := FLastResponse; end;

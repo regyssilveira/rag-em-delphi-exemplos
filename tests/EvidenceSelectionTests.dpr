@@ -1,9 +1,10 @@
 program EvidenceSelectionTests;
 {$APPTYPE CONSOLE}
-uses System.SysUtils, Rag.Types, Rag.Context, Rag.Answers,
+uses System.SysUtils, System.JSON, Rag.Types, Rag.Context, Rag.Answers,
   Rag.EvidenceContext, Rag.Generation.Extractive;
 var Doc: TDocument; Ranked: TArray<TSearchResult>; Context: TPreparedContext;
   Answer: TValidatedAnswer; Checks: Integer; Bad: string; Rejected: Boolean;
+  Parsed: TJSONValue; SourceObject: TJSONObject;
 procedure Check(Value: Boolean; const Name: string);
 begin
   if not Value then raise Exception.Create(Name);
@@ -13,7 +14,7 @@ begin
   try
     Doc := Default(TDocument);
     Doc.Id := 'own.md'; Doc.Source := 'own.md'; Doc.Access := 'operacional';
-    Doc.Text := '# Procedimento' + #10#10 +
+    Doc.Text := '# Procedimento' + #10#10 + '## Liberação' + #10#10 +
       'Somente a equipe de qualidade libera o lote após conferir o registro. ' +
       'A decisão inclui data e justificativa.';
     SetLength(Ranked, 1);
@@ -23,6 +24,13 @@ begin
     Ranked[0].Chunk.StartOffset := Pos('nte a equipe', Doc.Text);
     Ranked[0].Chunk.Text := Copy(Doc.Text, Ranked[0].Chunk.StartOffset, 35);
     Context := BuildEvidenceContext(Ranked, [Doc], 'operacional');
+    Parsed := TJSONObject.ParseJSONValue(Context.Serialized);
+    try
+      SourceObject := (Parsed.FindValue('sources') as TJSONArray).Items[0] as TJSONObject;
+      Check((SourceObject.GetValue<string>('documentTitle') = 'Procedimento') and
+        (SourceObject.GetValue<string>('sectionTitle') = 'Liberação'),
+        'Título e seção preservados no contexto, sem entrar na afirmação');
+    finally Parsed.Free; end;
     Check((Length(Context.Sources) = 1) and
       Context.Sources[0].Chunk.Text.StartsWith('Somente') and
       Context.Sources[0].Chunk.Text.EndsWith('data e justificativa.'),
