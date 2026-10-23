@@ -1,7 +1,7 @@
 program EvidenceSelectionEvaluation;
 {$APPTYPE CONSOLE}
 uses System.SysUtils, System.Classes, System.IOUtils, System.JSON,
-  System.Generics.Collections, Rag.Types, Rag.Core, Rag.Vectors,
+  System.Generics.Collections, System.Diagnostics, Rag.Types, Rag.Core, Rag.Vectors,
   Rag.Embeddings, Rag.Persistence, Rag.Generation, Rag.Generation.Extractive,
   Rag.Assistant, Rag.Answers, Rag.Context;
 var Documents: TList<TDocument>; Name, Access, Id, Question, Profile, Folder: string;
@@ -10,7 +10,7 @@ var Documents: TList<TDocument>; Name, Access, Id, Question, Profile, Folder: st
   Response: TAssistantResponse; Claim: TAnswerClaim; Evidence: TAnswerEvidence;
   Report, Row, Item: TJSONObject; Rows, Claims, Evidences: TJSONArray;
   ExpectedSource, ExpectedEvidence: string; ExpectedAnswer, Found, ClaimMinimum: Boolean;
-  Passed, Failed: Integer;
+  Passed, Failed: Integer; Watch: TStopwatch;
 begin
   try
     if ParamCount <> 3 then raise Exception.Create('Informe corpus, perguntas e pasta nova');
@@ -40,8 +40,11 @@ begin
       Rows := TJSONArray.Create; Report.AddPair('cases', Rows);
       Report.AddPair('generationIdentity', Generator.ModelIdentity);
       Passed := 0; Failed := 0;
+      Watch := TStopwatch.StartNew;
       for CaseValue in TJSONArray(Value) do
       begin
+        if Watch.Elapsed.TotalMinutes > 10 then
+          raise EAnswerTransportError.Create('Orçamento de dez minutos excedido');
         Id := CaseValue.GetValue<string>('id');
         Question := CaseValue.GetValue<string>('question');
         Profile := CaseValue.GetValue<string>('profile');
@@ -92,6 +95,14 @@ begin
           begin
             Row.AddPair('passed', TJSONBool.Create(False));
             Row.AddPair('error', E.Message); Inc(Failed); Writeln('FAIL: ', Id, ' | ', E.Message);
+            if E is EAnswerTransportError then
+            begin
+              TFile.WriteAllText(TPath.Combine(Folder, 'extended-answer-' + Id + '.json'),
+                Generator.LastResponse, TEncoding.UTF8);
+              Report.AddPair('executionComplete', TJSONBool.Create(False));
+              TFile.WriteAllText(TPath.Combine(Folder, 'evaluation.json'), Report.ToJSON, TEncoding.UTF8);
+              raise;
+            end;
           end;
         end;
         TFile.WriteAllText(TPath.Combine(Folder, 'extended-answer-' + Id + '.json'),

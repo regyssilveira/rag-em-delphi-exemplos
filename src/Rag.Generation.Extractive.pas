@@ -129,7 +129,9 @@ begin
   try
     Http.HandleRedirects := False;
     Http.ConnectionTimeout := 5000; Http.ResponseTimeout := 120000;
-    Response := Http.Get('http://127.0.0.1:11434/api/tags');
+    try Response := Http.Get('http://127.0.0.1:11434/api/tags');
+    except on E: Exception do
+      raise EAnswerTransportError.Create('Serviço local indisponível'); end;
     if Response.StatusCode <> 200 then
       raise EAnswerTransportError.Create('Falha ao conferir modelo local');
     Json := TJSONObject.ParseJSONValue(Response.ContentAsString(TEncoding.UTF8));
@@ -176,7 +178,9 @@ begin
       Body := TStringStream.Create(Request.ToJSON, TEncoding.UTF8);
       try
         Http.ContentType := 'application/json';
-        Response := Http.Post('http://127.0.0.1:11434/api/chat', Body);
+        try Response := Http.Post('http://127.0.0.1:11434/api/chat', Body);
+        except on E: Exception do
+          raise EAnswerTransportError.Create('Falha de conexão ou tempo limite local'); end;
       finally Body.Free; end;
       FLastResponse := Response.ContentAsString(TEncoding.UTF8);
       if (Response.StatusCode <> 200) or (Length(FLastResponse) > 1048576) then
