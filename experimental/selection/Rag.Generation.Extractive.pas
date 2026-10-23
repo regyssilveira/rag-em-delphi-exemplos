@@ -1,12 +1,11 @@
-unit Rag.Generation.Extractive;
+﻿unit Rag.Generation.Extractive;
 
 interface
 
 uses System.SysUtils, Rag.Generation, Rag.Context, Rag.Answers;
 
 type
-  TOllamaExtractiveProvider = class(TInterfacedObject, IAnswerProvider,
-    IWholePassageAnswerProvider)
+  TOllamaExtractiveProvider = class(TInterfacedObject, IAnswerProvider)
   private
     FLastResponse: string;
   public

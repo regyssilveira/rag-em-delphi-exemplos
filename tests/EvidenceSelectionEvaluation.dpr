@@ -1,9 +1,9 @@
-program EvidenceSelectionEvaluation;
+﻿program EvidenceSelectionEvaluation;
 {$APPTYPE CONSOLE}
 uses System.SysUtils, System.Classes, System.IOUtils, System.JSON,
   System.Generics.Collections, System.Diagnostics, Rag.Types, Rag.Core, Rag.Vectors,
   Rag.Embeddings, Rag.Persistence, Rag.Generation, Rag.Generation.Extractive,
-  Rag.Assistant, Rag.Answers, Rag.Context;
+  Rag.ExtractiveAssistant, Rag.Answers, Rag.Context;
 var Documents: TList<TDocument>; Name, Access, Id, Question, Profile, Folder: string;
   Embeddings: IEmbeddingProvider; Generator: IAnswerProvider;
   Base: TPreparedBase; Stats: TUpdateStats; Value, CaseValue, Minimum: TJSONValue;

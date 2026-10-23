@@ -17,9 +17,6 @@ type
     property LastResponse: string read
       GetLastResponse;
   end;
-  IWholePassageAnswerProvider = interface(IAnswerProvider)
-    ['{8BB8BD64-8C25-4FF6-A9D0-28D6872AD1C6}']
-  end;
   TOllamaAnswerProvider = class(TInterfacedObject,
     IAnswerProvider)
   private
@@ -37,7 +34,7 @@ function AnswerInstructions: string;
 implementation
 
 uses System.JSON, System.Classes,
-  System.Net.HttpClient, Rag.Generation.Gemini, Rag.Generation.Extractive;
+  System.Net.HttpClient, Rag.Generation.Gemini;
 
 const
   Model = 'qwen2.5:7b';
@@ -74,8 +71,6 @@ function CreateAnswerProvider: IAnswerProvider;
 var ProviderName, RemoteModel: string;
 begin
   ProviderName := GetEnvironmentVariable('RAG_GENERATION_PROVIDER').Trim.ToLower;
-  if ProviderName = 'ollama-extractive' then
-    Exit(TOllamaExtractiveProvider.Create);
   if (ProviderName = '') or (ProviderName = 'ollama') then
     Exit(TOllamaAnswerProvider.Create);
   if ProviderName <> 'gemini' then

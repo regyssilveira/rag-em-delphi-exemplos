@@ -1,0 +1,17 @@
+{
+  "evaluatedCommit": "af2cd28",
+  "status": "terminal-not-accepted",
+  "files": [
+    {
+      "source": "src/Rag.EvidenceContext.pas",
+      "destination": "experimental/selection/Rag.EvidenceContext.pas",
+      "sha256": "8b15962f6abb9cd85780ab1002ca76bb41640a42e1e41e28839f7b81c26c0568"
+    },
+    {
+      "source": "src/Rag.Generation.Extractive.pas",
+      "destination": "experimental/selection/Rag.Generation.Extractive.pas",
+      "sha256": "1c276ddab5482b5a25ae6396eb6b96232946afe663a766250bc838d65d40762d"
+    }
+  ],
+  "scope": "Archived after failed run. Main factory/coordinator restored. Experimental coordinator has an explicit name; no new model execution inferred from isolation."
+}
